@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 20% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -21,64 +21,108 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --input: 220 14% 96%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.75rem;
+    --radius: 0.6rem;
 
-    /* Sidebar Variables */
-    --sidebar-background: 210 62% 10%;
+    /* Sidebar Variables - Dark Theme */
+    --sidebar-background: 223 33% 13%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 213 94% 50%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 50% 18%;
+    --sidebar-accent: 223 25% 20%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 210 40% 15%;
-    --sidebar-ring: 213 94% 50%;
+    --sidebar-border: 223 20% 20%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   .dark {
-    --background: 210 62% 10%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 210 55% 12%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-    --popover: 210 62% 10%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 213 94% 55%;
-    --primary-foreground: 210 62% 10%;
-    --secondary: 210 50% 18%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 210 50% 18%;
-    --muted-foreground: 210 30% 55%;
-    --accent: 210 50% 18%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 210 40% 16%;
-    --input: 210 40% 16%;
-    --ring: 213 94% 55%;
-
-    /* Dark Mode Sidebar */
-    --sidebar-background: 210 62% 10%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 213 94% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 50% 18%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 210 40% 15%;
-    --sidebar-ring: 213 94% 50%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
+}
+
+/* ── Global Scrollbar Customization ── */
+html, body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.dark html, .dark body {
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Sidebar Scrollbar ── */
+[data-sidebar="sidebar"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-sidebar="sidebar"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide horizontal overflow in Sidebar */
+[data-sidebar="sidebar"],
+[data-sidebar="sidebar"] * {
+  overflow-x: hidden !important;
 }
 
 @layer base {
   * {
     @apply border-border;
+    font-family: var(--font-inter), sans-serif !important;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), sans-serif !important;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 .letter-tighter {
   letter-spacing: -0.05em;
+}
+
+/* Ensure images and small items don't break flex containers */
+img, svg, button {
+  max-width: 100%;
 }

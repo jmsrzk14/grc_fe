@@ -4,8 +4,8 @@ import {
   LogOut, 
   Settings, 
   User,
-  ShieldCheck,
-  ChevronDown
+  Bell,
+  Search
 } from "lucide-react";
 
 import {
@@ -26,50 +26,57 @@ import {
 
 export function UserNav() {
   return (
-    <div className="flex items-center gap-4">    
+    <div className="flex items-center gap-6">    
+      {/* Search Icon */}
+      <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 hover:text-slate-600 rounded-full">
+        <Search size={20} />
+      </Button>
+
+      {/* Notification Bell */}
+      <div className="relative cursor-pointer group">
+        <div className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+          <Bell size={20} className="text-slate-400 group-hover:text-slate-600" />
+        </div>
+        <div className="absolute top-2 right-2.5 h-2 w-2 bg-rose-500 rounded-full border-2 border-white shadow-sm" />
+      </div>
+
+      {/* User Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 flex items-center gap-3 px-2 rounded-full hover:bg-slate-100 group">
-            <Avatar className="h-8 w-8 bg-blue-600 border border-blue-400 shadow">
+          <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full hover:bg-slate-100 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
               <AvatarImage src="/avatars/01.png" alt="@administrator" />
-              <AvatarFallback className="bg-blue-600 text-white font-black text-xs">GRC</AvatarFallback>
+              <AvatarFallback className="bg-blue-600 text-white font-bold text-xs uppercase">AD</AvatarFallback>
             </Avatar>
-            <div className="flex flex-col items-start text-xs text-left group-hover:text-slate-800 transition-colors duration-200">
-               <p className="font-bold leading-none mb-0.5 text-slate-700">Admin</p>
-               <p className="text-[10px] text-slate-400 font-mono">ADMINISTRATOR</p>
-            </div>
-            <ChevronDown size={12} className="text-slate-400 group-hover:text-slate-700" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 bg-white border-slate-200 text-slate-700 shadow-lg" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
+        <DropdownMenuContent className="w-56 bg-white border-slate-100 text-slate-700 shadow-xl rounded-xl mt-2" align="end">
+          <DropdownMenuLabel className="font-normal p-4">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-bold leading-none text-slate-800">Admin</p>
-              <p className="text-xs leading-none text-slate-400">
-                admin@dkn.com
+              <p className="text-sm font-bold leading-none text-slate-900">Administrator</p>
+              <p className="text-[11px] leading-none text-slate-400 mt-1">
+                admin@cms-dots.com
               </p>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-slate-100" />
-          <DropdownMenuGroup>
-            <DropdownMenuItem className="focus:bg-slate-50 focus:text-slate-800 cursor-pointer group">
-              <User className="mr-2 h-4 w-4 text-slate-400 group-hover:text-blue-500" />
-              <span>Profile</span>
+          <DropdownMenuSeparator className="bg-slate-50" />
+          <DropdownMenuGroup className="p-2">
+            <DropdownMenuItem className="rounded-lg focus:bg-slate-50 focus:text-slate-900 cursor-pointer py-2">
+              <User className="mr-3 h-4 w-4 text-slate-400" />
+              <span className="text-[13px] font-medium">My Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-slate-50 focus:text-slate-800 cursor-pointer group">
-              <ShieldCheck className="mr-2 h-4 w-4 text-slate-400 group-hover:text-blue-500" />
-              <span>Roles &amp; Permissions</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-slate-50 focus:text-slate-800 cursor-pointer group">
-              <Settings className="mr-2 h-4 w-4 text-slate-400 group-hover:text-amber-500" />
-              <span>System Settings</span>
+            <DropdownMenuItem className="rounded-lg focus:bg-slate-50 focus:text-slate-900 cursor-pointer py-2">
+              <Settings className="mr-3 h-4 w-4 text-slate-400" />
+              <span className="text-[13px] font-medium">Settings</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator className="bg-slate-100" />
-          <DropdownMenuItem className="focus:bg-rose-50 focus:text-rose-500 text-rose-500 cursor-pointer font-bold">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
-          </DropdownMenuItem>
+          <DropdownMenuSeparator className="bg-slate-50" />
+          <div className="p-2">
+            <DropdownMenuItem className="rounded-lg focus:bg-rose-50 focus:text-rose-600 text-rose-500 cursor-pointer font-bold py-2">
+              <LogOut className="mr-3 h-4 w-4" />
+              <span className="text-[13px]">Log out</span>
+            </DropdownMenuItem>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

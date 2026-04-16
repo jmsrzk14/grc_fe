@@ -1,8 +1,15 @@
+import React from "react";
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import AppSidebar from "@/components/Sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/UserNav";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -23,17 +30,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen text-slate-700 antialiased font-sans overflow-hidden" style={{ background: "#ffffff" }}>
+      <body className={`${inter.variable} ${inter.className} flex min-h-screen text-slate-800 antialiased overflow-hidden bg-background`}>
         <SidebarProvider>
           <AppSidebar />
           
           <div className="flex flex-col flex-1 h-screen overflow-hidden">
             <header
-              className="h-16 flex items-center justify-between px-6 shrink-0 z-10 sticky top-0 border-b"
-              style={{ background: "#ffffff", borderColor: "#e5e9f0" }}
+              className="h-16 flex items-center justify-between px-6 shrink-0 z-10 sticky top-0 border-b bg-card"
             >
               <div className="flex items-center gap-4">
-                 <SidebarTrigger className="h-9 w-9 text-slate-400 hover:text-slate-700 transition-colors" />
+                 <SidebarTrigger className="h-9 w-9 text-slate-400 hover:text-slate-600 transition-colors" />
+                 <h1 className="text-sm font-bold text-slate-800 tracking-tight">GRC DOTS</h1>
               </div>
               
               <div className="flex items-center gap-4">
@@ -42,14 +49,13 @@ export default function RootLayout({
             </header>
             
             <main
-              className="flex-1 overflow-y-auto p-4 md:p-8"
-              style={{ background: "#ffffff" }}
+              className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8"
             >
-              <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
+              <div className="mx-auto space-y-8 animate-in fade-in duration-700">
                 {children}
               </div>
 
-              <footer className="mt-20 pb-8 pt-8 text-center opacity-40 hover:opacity-100 transition-opacity border-t" style={{ borderColor: "#e5e9f0" }}>
+              <footer className="mt-20 pb-8 pt-8 text-center opacity-30 hover:opacity-100 transition-opacity border-t">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                   &copy; 2026 - Dimensi Kreasi Nusantara. All rights reserved.
                 </p>

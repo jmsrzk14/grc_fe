@@ -1,11 +1,32 @@
 "use client";
 
+import React, { useState } from "react";
+import Link from "next/link";
 import { POLICIES } from "@/lib/data";
-import { FileText, Plus, Search, CheckCircle2, AlertCircle, Clock, ShieldCheck, History, Download, XCircle } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { 
+  FileText, 
+  ChevronDown, 
+  Search, 
+  Filter, 
+  Calendar,
+  MoreVertical,
+  CheckCircle2,
+  Clock,
+  Download,
+  ShieldCheck,
+  History,
+  Plus
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Table, 
   TableBody, 
@@ -16,104 +37,120 @@ import {
 } from "@/components/ui/table";
 
 export default function PoliciesPage() {
+  const [search, setSearch] = useState("");
+
+  const filteredPolicies = POLICIES.filter(p =>
+    p.title.toLowerCase().includes(search.toLowerCase()) ||
+    p.id.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6 animate-in slide-in-from-left-4 duration-500">
-      <div className="flex justify-between items-center bg-white p-4 border border-slate-200 rounded-xl shadow-sm">
-        <header>
-          <h2 className="text-2xl font-black tracking-tight text-slate-800 uppercase letter-tighter">Policy Tracking</h2>
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1 leading-none italic">
-             Governance document management & version control
-          </p>
-        </header>
-        <div className="flex gap-2">
-          <Button variant="outline" className="text-[10px] h-8 border-slate-200 text-slate-500 font-bold hover:bg-slate-50">
-             <History size={14} className="mr-2" />
-             ARCHIVE
-          </Button>
-          <Button variant="default" className="text-[10px] h-8 bg-blue-600 hover:bg-blue-700 font-bold text-white shadow-lg shadow-blue-500/20">
-             <Plus size={14} className="mr-2" />
-             NEW POLICY
-          </Button>
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-1">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">GRC DOTS</p>
+        <div className="flex items-center justify-between mt-6">
+          <h2 className="text-[32px] font-bold text-slate-900 tracking-tight">Policy Tracking</h2>
+          <p className="text-sm font-medium text-slate-400">{POLICIES.length} documents total</p>
         </div>
       </div>
 
-      <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
-        <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between bg-slate-50/50">
-           <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-600/10 rounded-lg">
-                 <FileText size={18} className="text-blue-500" />
-              </div>
-              <CardTitle className="text-lg text-slate-800">Document Registry</CardTitle>
-           </div>
-           <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-              <Input className="h-9 w-[300px] pl-9 bg-white border-slate-200 text-xs text-slate-800 placeholder:text-slate-400" placeholder="Search by title or ID..." />
-           </div>
-        </CardHeader>
+      {/* ── Filter Bar ── */}
+      <div className="flex flex-wrap items-center gap-2 p-1 rounded-xl">
+        <div className="relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Input 
+            placeholder="Search policy doc..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-64 h-10 pl-9 border-slate-200 rounded-lg shadow-sm text-sm"
+          />
+        </div>
+
+        <Select defaultValue="all">
+          <SelectTrigger className="h-10 w-[140px] bg-white border-slate-200 text-slate-700 font-semibold rounded-lg ml-2 hover:bg-slate-50">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="revised">Revised</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select defaultValue="all">
+          <SelectTrigger className="h-10 w-[140px] bg-white border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50">
+            <SelectValue placeholder="Approver" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Approvers</SelectItem>
+            <SelectItem value="cso">CSO</SelectItem>
+            <SelectItem value="board">Board</SelectItem>
+            <SelectItem value="legal">Legal</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Link href="/policies/create">
+          <Button variant="secondary" className="h-10 px-6 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors ml-auto">
+            Create New Policy
+          </Button>
+        </Link>
+      </div>
+
+      {/* ── Policies Table ── */}
+      <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-slate-50/80">
-              <TableRow className="border-slate-200 hover:bg-transparent">
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Policy ID</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Document Title</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Dibuat</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Disetujui</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Versi</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Update Terakhir</TableHead>
-                <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest text-slate-400">Actions</TableHead>
+            <TableHeader className="bg-slate-50/50">
+              <TableRow className="border-slate-100 hover:bg-transparent">
+                <TableHead className="py-4 px-6 text-[12px] font-bold uppercase tracking-wider text-slate-400 h-14">POLICY ID</TableHead>
+                <TableHead className="py-4 px-4 text-[12px] font-bold uppercase tracking-wider text-slate-400 h-14">DOCUMENT TITLE</TableHead>
+                <TableHead className="py-4 px-4 text-[12px] font-bold uppercase tracking-wider text-slate-400 h-14">STATUS PROSES</TableHead>
+                <TableHead className="py-4 px-4 text-[12px] font-bold uppercase tracking-wider text-slate-400 h-14 text-center">VERSION</TableHead>
+                <TableHead className="py-4 px-6 text-[12px] font-bold uppercase tracking-wider text-slate-400 h-14 text-right">LAST UPDATE</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {POLICIES.map((policy) => (
-                <TableRow key={policy.id} className="border-slate-100 hover:bg-slate-50 transition-colors">
-                  <TableCell className="font-mono text-[10px] text-slate-400 py-4 uppercase font-bold">{policy.id}</TableCell>
-                  <TableCell>
+              {filteredPolicies.map((policy, i) => (
+                <TableRow key={policy.id} className="border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                  <TableCell className="py-4 px-6 text-[13px] text-slate-500 font-mono font-bold">
+                    {policy.id}
+                  </TableCell>
+                  <TableCell className="py-4 px-4">
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">{policy.title}</span>
-                      <span className="text-[9px] font-bold text-slate-500">Approver: {policy.approver}</span>
+                      <span className="text-[14px] font-bold text-slate-800 group-hover:text-blue-600 transition-colors cursor-pointer leading-tight uppercase font-inter">
+                        {policy.title}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Approver: {policy.approver}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    {policy.isCreated ? (
-                      <div className="flex items-center text-emerald-600 font-bold text-[10px] gap-1">
-                        <CheckCircle2 size={12} /> YA
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-rose-500 font-bold text-[10px] gap-1">
-                        <XCircle size={12} /> BELUM
-                      </div>
-                    )}
+                  <TableCell className="py-4 px-4">
+                    <div className="flex flex-col gap-1.5 ">
+                       <div className="flex items-center gap-2">
+                         <div className={`h-1.5 w-1.5 rounded-full ${policy.isCreated ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Created</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <div className={`h-1.5 w-1.5 rounded-full ${policy.isApproved ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Approved</span>
+                       </div>
+                    </div>
                   </TableCell>
-                  <TableCell>
-                    {policy.isApproved ? (
-                      <div className="flex items-center text-emerald-600 font-bold text-[10px] gap-1">
-                        <CheckCircle2 size={12} /> YA
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-amber-500 font-bold text-[10px] gap-1">
-                        <Clock size={12} /> PROSES
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-[10px] font-mono text-slate-500 font-bold">
-                    <Badge variant="outline" className={`text-[8px] font-bold ${policy.version.includes('Terbaru') ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-slate-50 text-slate-400'}`}>
+                  <TableCell className="py-4 px-4 text-center">
+                    <div className="inline-flex items-center justify-center p-1.5 bg-slate-100 rounded-md font-bold text-[10px] min-w-[50px] border border-slate-200/50 text-slate-600 uppercase">
                       {policy.version}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-600 font-bold uppercase">
-                       <Clock size={12} className="text-slate-400" />
-                       {policy.lastUpdate}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-800">
-                         <Download size={14} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-blue-500">
-                         <ShieldCheck size={14} />
-                      </Button>
+                  <TableCell className="py-4 px-6 text-right">
+                    <div className="flex items-center justify-end gap-4">
+                       <div className="flex flex-col items-end">
+                         <span className="text-[12px] font-bold text-slate-800 uppercase">{policy.lastUpdate}</span>
+                         <span className="text-[9px] text-slate-400 font-bold">BY SYSTEM</span>
+                       </div>
+                       <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-slate-600">
+                         <MoreVertical size={16} />
+                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -125,4 +162,3 @@ export default function PoliciesPage() {
     </div>
   );
 }
-

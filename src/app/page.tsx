@@ -1,24 +1,25 @@
 "use client";
 
-import { STATS, MONITORING_ALERTS } from "@/lib/data";
+import React from "react";
+import { STATS, MONITORING_ALERTS, RISK_LEVELS } from "@/lib/data";
 import { 
-  ShieldCheck, 
-  AlertTriangle, 
   ArrowUpRight, 
-  ArrowDownRight, 
   Activity,
   Bell,
   Clock,
   ShieldAlert,
-  FileWarning
+  FileWarning,
+  TrendingUp,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 export default function Dashboard() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black tracking-tighter text-slate-800 uppercase letter-tighter">Dashboard</h1>
+    <div className="space-y-8">
+      <div className="flex flex-col gap-1">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">GRC DOTS</p>
+        <h1 className="text-[32px] font-bold text-slate-900 tracking-tight mt-6">Dasbor</h1>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -26,19 +27,29 @@ export default function Dashboard() {
         {STATS.map((stat, i) => (
           <Card
             key={i}
-            className="group hover:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-md"
-            style={{ background: "#ffffff", borderColor: "#e5e9f0" }}
+            className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] transition-all duration-300"
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                {stat.label}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.color === 'rose' ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'} group-hover:bg-blue-600 group-hover:text-white transition-colors`}>
-                <stat.icon size={16} />
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-[12px] font-bold uppercase tracking-wider text-slate-400">
+                  {stat.label}
+                </CardTitle>
+                <div className={`p-2 rounded-lg ${stat.trend === 'up' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
+                  {(() => {
+                    const Icon = stat.icon;
+                    return <Icon size={16} />;
+                  })()}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-black ${stat.color === 'rose' ? 'text-rose-600' : 'text-slate-800'}`}>{stat.value}</div>
+              <div className="flex items-end justify-between">
+                <div className="text-[32px] font-bold text-slate-900 leading-none">{stat.value}</div>
+                <div className={`flex items-center gap-1 text-xs font-bold ${stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {stat.change}
+                  <TrendingUp size={12} className={stat.trend === 'up' ? '' : 'rotate-180'} />
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -48,78 +59,77 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Risk Distribution */}
         <Card
-          className="lg:col-span-4 shadow-sm overflow-hidden"
-          style={{ background: "#ffffff", borderColor: "#e5e9f0" }}
+          className="lg:col-span-4 border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden"
         >
-          <CardHeader className="border-b" style={{ borderColor: "#e5e9f0", background: "#f8fafc" }}>
+          <CardHeader className="border-b border-slate-50 pb-4">
             <div className="flex items-center justify-between">
                <div>
-                  <CardTitle className="text-lg font-black text-slate-800 uppercase tracking-tight">Risk Distribution</CardTitle>
-                  <CardDescription className="text-xs font-medium text-slate-400">Inventory of risks across severity levels</CardDescription>
+                  <CardTitle className="text-lg font-bold text-slate-900">Risk Distribution</CardTitle>
+                  <CardDescription className="text-xs font-medium text-slate-400">Total counted: {RISK_LEVELS.reduce((acc, curr) => acc + curr.count, 0)} Risks</CardDescription>
                </div>
-               <ShieldAlert size={20} className="text-rose-500" />
+               <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+                  <Activity size={20} className="text-blue-600" />
+               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
-            {[
-              { label: "Critical Risks", value: 15, color: "bg-rose-600" },
-              { label: "High Priority", value: 35, color: "bg-rose-400" },
-              { label: "Moderate Risks", value: 40, color: "bg-amber-500" },
-              { label: "Managed Risks", value: 10, color: "bg-emerald-500" },
-            ].map((item, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-600 uppercase tracking-wide">{item.label}</span>
-                  <span className="font-black text-slate-800">{item.value}%</span>
+            {RISK_LEVELS.map((item, i) => {
+              const total = RISK_LEVELS.reduce((acc, curr) => acc + curr.count, 0);
+              const percentage = Math.round((item.count / total) * 100);
+              return (
+                <div key={i} className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-500 uppercase tracking-wide">{item.name} Priority</span>
+                    <span className="font-bold text-slate-900">{item.count} Risks ({percentage}%)</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                     <div
+                      className="h-full transition-all duration-1000"
+                      style={{ 
+                        width: `${percentage}%`,
+                        backgroundColor: item.color 
+                      }}
+                     />
+                  </div>
                 </div>
-                <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: "#eef2f7" }}>
-                   <div
-                    className={`h-full ${item.color} transition-all duration-1000`}
-                    style={{ width: `${item.value}%` }}
-                   />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 
         {/* Governance & Alerts */}
         <Card
-          className="lg:col-span-3 shadow-sm"
-          style={{ background: "#ffffff", borderColor: "#e5e9f0" }}
+          className="lg:col-span-3 border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden"
         >
-          <CardHeader className="border-b" style={{ borderColor: "#e5e9f0", background: "#f8fafc" }}>
+          <CardHeader className="border-b border-slate-50 pb-4">
             <div className="flex items-center justify-between">
                <div>
-                  <CardTitle className="text-lg font-black text-slate-800 uppercase tracking-tight">System Notifications</CardTitle>
-                  <CardDescription className="text-xs font-medium text-slate-400">Action items for Governance & Risk</CardDescription>
+                  <CardTitle className="text-lg font-bold text-slate-900">Notifikasi</CardTitle>
+                  <CardDescription className="text-xs font-medium text-slate-400">Pemberitahuan sistem terbaru</CardDescription>
                </div>
-               <Bell size={20} className="text-amber-500 animate-pulse" />
+               <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+                  <Bell size={20} className="text-blue-600" />
+               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
+          <CardContent className="pt-4">
+            <div className="space-y-1">
               {MONITORING_ALERTS.map((alert) => (
                 <div
                   key={alert.id}
-                  className="flex gap-4 items-start p-3 rounded-xl transition-colors cursor-pointer group hover:bg-slate-50 border border-transparent hover:border-slate-100"
+                  className="flex gap-4 items-center p-3 rounded-lg transition-colors cursor-pointer group hover:bg-slate-50"
                 >
-                  <div className={`mt-1 p-1.5 rounded-lg shrink-0 ${
-                    alert.type === 'Risk' ? 'bg-rose-100 text-rose-600' :
-                    alert.type === 'Deadline' ? 'bg-amber-100 text-amber-600' :
-                    'bg-blue-100 text-blue-600'
+                  <div className={`p-2 rounded-lg shrink-0 ${
+                    alert.severity === 'High' ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-400'
                   }`}>
                     {alert.type === 'Risk' && <ShieldAlert size={14} />}
                     {alert.type === 'Deadline' && <Clock size={14} />}
                     {alert.type === 'Policy' && <FileWarning size={14} />}
-                    {alert.type === 'Governance' && <ShieldCheck size={14} />}
+                    {alert.type === 'Governance' && <AlertCircle size={14} />}
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-xs font-black text-slate-700 uppercase tracking-tight leading-none">{alert.title}</p>
-                    <p className="text-[10px] text-slate-400 font-medium leading-tight">{alert.detail}</p>
-                    <div className="flex items-center gap-2">
-                       <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{alert.time}</span>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">{alert.title}</p>
+                    <p className="text-[11px] text-slate-400 font-medium truncate">{alert.detail}</p>
                   </div>
                   <ArrowUpRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
                 </div>
