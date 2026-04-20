@@ -298,7 +298,7 @@ export default function RegulationDetailPage() {
             </div>
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Total Item</p>
-              <p className="text-md font-black text-slate-900 uppercase tracking-tight">{items.length} Item Terindeks</p>
+              <p className="text-md font-black text-slate-900 uppercase tracking-tight">{items.length}</p>
             </div>
           </CardContent>
         </Card>
@@ -310,28 +310,21 @@ export default function RegulationDetailPage() {
            <div className="h-6 w-1.5 bg-blue-600 rounded-full" />
            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Direktori Item</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
           {items.length > 0 ? (
             items.map((item, index) => (
               <Card key={item.id} className="group border border-slate-100 bg-white rounded-[24px] hover:border-blue-200 hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full">
                 <CardContent className="p-6 flex-1 relative">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                      <FileText size={20} />
-                    </div>
-                    <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">
-                      Item
+                    <div className="text-xs font-bold text-slate-500 flex items-center justify-center uppercase tracking-widest">
+                      {item.reference_number}
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     <h3 className="text-lg font-black text-slate-900 leading-[1.3] group-hover:text-blue-600 transition-colors">
-                      {item.content.length > 80 ? item.content.substring(0, 80) + '...' : item.content}
+                      {item.content}
                     </h3>
-                    <div>
-                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">KODE REFERENSI</p>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.reference_number}</p>
-                    </div>
                   </div>
                 </CardContent>
                 <div className="p-5 bg-slate-50/50 border-t border-slate-100 mt-auto">
