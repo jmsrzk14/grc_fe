@@ -5,6 +5,7 @@ import "./globals.css";
 import AppSidebar from "@/components/Sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/UserNav";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,13 +56,14 @@ export default function RootLayout({
                 {children}
               </div>
 
-              <footer className="mt-20 pb-8 pt-8 text-center opacity-30 hover:opacity-100 transition-opacity border-t">
+              <footer className="mt-28 pb-8 pt-8 text-center border-t">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
                   &copy; 2026 - Dimensi Kreasi Nusantara. All rights reserved.
                 </p>
               </footer>
             </main>
           </div>
+          <Toaster />
         </SidebarProvider>
       </body>
     </html>

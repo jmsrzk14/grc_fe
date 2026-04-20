@@ -1,19 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
-  ShieldCheck, 
   ArrowLeft, 
   Save, 
   Trash2, 
-  Clock, 
-  User, 
-  Info,
+  ShieldCheck,
   FileBadge,
-  AlertCircle
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,14 +21,65 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateCompliancePage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    regulation_type: "POJK",
+    category: "Internal",
+    issued_date: new Date().toISOString().split('T')[0],
+    status: "Active"
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/api/v1/regulations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Berhasil!",
+          description: "Regulasi baru telah berhasil didaftarkan.",
+          variant: "success",
+        });
+        router.push("/compliance");
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Gagal!",
+          description: errorData.message || "Terjadi kesalahan saat menyimpan data.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast({
+        title: "Error!",
+        description: "Tidak dapat terhubung ke server.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* ── Header ── */}
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">GRC DOTS</p>
         <div className="flex items-center justify-between mt-6">
           <div className="flex items-center gap-4">
              <Link href="/compliance">
@@ -39,40 +87,58 @@ export default function CreateCompliancePage() {
                  <ArrowLeft size={18} />
                </Button>
              </Link>
-             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Add Requirement</h2>
+             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Tambah Regulasi</h2>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── Form Section ── */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-6">
-               <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Regulatory Commitment</CardTitle>
-            </CardHeader>
             <CardContent className="p-8 space-y-6">
                <div className="grid gap-3">
-                 <Label htmlFor="title" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Kewajiban / Judul Regulasi</Label>
-                 <Input id="title" placeholder="Nama kewajiban kepatuhan..." className="h-11 border-slate-200" />
+                 <Label htmlFor="title" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Judul Regulasi</Label>
+                 <Input 
+                   id="title" 
+                   required
+                   value={formData.title}
+                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                   placeholder="Nama kewajiban kepatuhan..." 
+                   className="h-12 border-slate-200 bg-slate-50/30 focus:bg-white transition-all rounded-xl shadow-sm" 
+                 />
                </div>
 
                <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-3">
-                    <Label htmlFor="id" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Referensi Regulasi</Label>
-                    <Input id="id" placeholder="Contoh: POJK No. X 2026" className="h-11 border-slate-200" />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="category" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Kategori Kepatuhan</Label>
-                    <Select>
-                      <SelectTrigger className="h-11 border-slate-200">
-                        <SelectValue placeholder="Pilih Pilar GRC" />
+                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tipe Regulasi</Label>
+                    <Select 
+                      value={formData.regulation_type}
+                      onValueChange={(v) => setFormData({ ...formData, regulation_type: v })}
+                    >
+                      <SelectTrigger className="h-12 border-slate-200 bg-slate-50/30 rounded-xl">
+                        <SelectValue placeholder="Pilih Tipe" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ojk">Pilar OJK</SelectItem>
-                        <SelectItem value="bi">Pilar BI</SelectItem>
-                        <SelectItem value="internal">Audit Internal</SelectItem>
-                        <SelectItem value="it">IT Governance</SelectItem>
+                        <SelectItem value="POJK">POJK</SelectItem>
+                        <SelectItem value="OJK">OJK</SelectItem>
+                        <SelectItem value="BI">BI</SelectItem>
+                        <SelectItem value="Internal">Internal Document</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-3">
+                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Kategori</Label>
+                    <Select 
+                      value={formData.category}
+                      onValueChange={(v) => setFormData({ ...formData, category: v })}
+                    >
+                      <SelectTrigger className="h-12 border-slate-200 bg-slate-50/30 rounded-xl">
+                        <SelectValue placeholder="Pilih Kategori" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Internal">Internal</SelectItem>
+                        <SelectItem value="External">External</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -80,37 +146,32 @@ export default function CreateCompliancePage() {
 
                <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="grid gap-3">
-                    <Label htmlFor="pic" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Petugas (PIC)</Label>
-                    <Input id="pic" placeholder="Nama PIC Penanggung Jawab" className="h-11 border-slate-200" />
+                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Status</Label>
+                    <Select 
+                      value={formData.status}
+                      onValueChange={(v) => setFormData({ ...formData, status: v })}
+                    >
+                      <SelectTrigger className="h-12 border-slate-200 bg-slate-50/30 rounded-xl">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Draft">Draft</SelectItem>
+                        <SelectItem value="Retired">Retired</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid gap-3">
-                    <Label htmlFor="deadline" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tenggat Waktu</Label>
-                    <Input id="deadline" type="date" className="h-11 border-slate-200" />
+                    <Label htmlFor="issued_date" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tanggal Dikeluarkan</Label>
+                    <Input 
+                      id="issued_date" 
+                      type="date" 
+                      required
+                      value={formData.issued_date}
+                      onChange={(e) => setFormData({ ...formData, issued_date: e.target.value })}
+                      className="h-12 border-slate-200 bg-slate-50/30 rounded-xl" 
+                    />
                   </div>
-               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-6">
-               <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Compliance Logic</CardTitle>
-            </CardHeader>
-            <CardContent className="p-8 space-y-6">
-               <div className="grid gap-3">
-                 <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Skala Prioritas</Label>
-                 <div className="flex gap-2">
-                   {['Minor', 'Medium', 'High', 'Critical'].map((lv) => (
-                     <button key={lv} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
-                       lv === 'High' ? "bg-rose-50 text-rose-600 border-rose-200 ring-2 ring-rose-100" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300"
-                     }`}>
-                       {lv}
-                     </button>
-                   ))}
-                 </div>
-               </div>
-               <div className="grid gap-3 pt-2">
-                 <Label htmlFor="remarks" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Catatan Tambahan</Label>
-                 <Textarea id="remarks" placeholder="Tambahkan instruksi pengerjaan compliance ini..." className="min-h-[100px] border-slate-200" />
                </div>
             </CardContent>
           </Card>
@@ -118,37 +179,27 @@ export default function CreateCompliancePage() {
 
         {/* ── Actions Sidebar ── */}
         <div className="space-y-4">
-           <Card className="border-none shadow-sm bg-blue-600 text-white rounded-xl">
-             <CardContent className="p-6 space-y-4 text-center">
-               <div className="p-3 bg-white/10 rounded-2xl w-fit mx-auto text-white mb-2">
-                  <ShieldCheck size={32} />
-               </div>
-               <div>
-                  <h3 className="text-lg font-bold">Add Commitment</h3>
-                  <p className="text-[11px] text-blue-100 mt-1 opacity-80 leading-relaxed">Menambahkan kewajiban compliance ini akan memicu alarm notifikasi ke PIC terkait.</p>
-               </div>
-               
-               <div className="pt-4 space-y-2">
-                 <Button className="w-full h-11 bg-white text-blue-600 hover:bg-blue-50 font-black shadow-lg shadow-blue-800/20">
-                   <Save size={18} className="mr-2" /> REGISTER COMMIT
+           <Card className="border-none shadow-sm text-white rounded-2xl overflow-hidden">
+             <CardContent className="p-6 space-y-6">
+               <div className="space-y-3">
+                 <Button 
+                   type="submit"
+                   disabled={loading}
+                   className="w-full h-14 bg-blue-600 text-white hover:bg-blue-700 font-black shadow-xl shadow-blue-500/20 rounded-xl transition-all active:scale-95"
+                 >
+                   {loading ? "MENYIMPAN..." : <><Save size={18} className="mr-2" /> Tambah Regulasi</>}
                  </Button>
+
+                 <Link href="/compliance" className="block">
+                   <Button variant="outline" type="button" className="w-full h-12 border-slate-900 bg-transparent text-slate-900 hover:bg-slate-800 hover:text-white font-bold rounded-xl">
+                     BATAL
+                   </Button>
+                 </Link>
                </div>
              </CardContent>
            </Card>
-
-           <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
-              <div className="flex items-center gap-3">
-                <FileBadge size={18} className="text-blue-500" />
-                <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">SLA Compliance</h4>
-              </div>
-              <p className="text-[10px] text-slate-500 leading-relaxed">Data yang disimpan tidak dapat dirubah setelah melewati 24 jam kecuali dengan persetujuan Admin GRC.</p>
-           </div>
-
-           <Button variant="ghost" className="w-full text-slate-400 hover:text-rose-500 font-bold gap-2">
-             <Trash2 size={16} /> Discard Item
-           </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

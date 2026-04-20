@@ -36,12 +36,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 /* ───────────── menu definition ───────────── */
-const utamaMenus = [
+const menus = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: Activity, label: "Audit Trail", href: "/audit" },
-];
-
-const administrasiMenus = [
   { icon: Building, label: "Governance", href: "/governance" },
   { icon: CreditCard, label: "Risk Management", href: "/risk" },
   { icon: User, label: "Compliance", href: "/compliance" },
@@ -149,25 +146,9 @@ export default function AppSidebar() {
         )}
 
         <SidebarGroup className="p-0">
-          <SidebarGroupLabel className="px-6 py-3 h-auto text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
-            UTAMA
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {utamaMenus.map((item) => (
-                <NavItem key={item.href} {...item} isCollapsed={isCollapsed} />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup className="p-0 mt-2">
-          <SidebarGroupLabel className="px-6 py-3 h-auto text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
-            ADMINISTRASI
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {administrasiMenus.map((item) => (
+              {menus.map((item) => (
                 <NavItem key={item.href} {...item} isCollapsed={isCollapsed} />
               ))}
             </SidebarMenu>
