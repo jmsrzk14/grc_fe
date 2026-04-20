@@ -62,14 +62,12 @@ export default function RegulationDetailPage() {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      // Fetch regulation detail
       const regRes = await fetch(`${apiUrl}/api/v1/regulations/${id}`);
       if (regRes.ok) {
         const regData = await regRes.json();
         setRegulation(regData);
       }
 
-      // Fetch items
       const itemsRes = await fetch(`${apiUrl}/api/v1/regulations/${id}/items`);
       if (itemsRes.ok) {
         const itemsData = await itemsRes.json();
@@ -105,7 +103,7 @@ export default function RegulationDetailPage() {
       if (response.ok) {
         toast({
           title: "Berhasil!",
-          description: "Klausul baru telah ditambahkan.",
+          description: "Item baru telah ditambahkan.",
           variant: "success",
         });
         setIsModalOpen(false);
@@ -115,7 +113,7 @@ export default function RegulationDetailPage() {
         const errorData = await response.json();
         toast({
           title: "Gagal!",
-          description: errorData.message || "Gagal menambahkan klausul.",
+          description: errorData.message || "Gagal menambahkan Item.",
           variant: "destructive",
         });
       }
@@ -157,7 +155,7 @@ export default function RegulationDetailPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* ── Top Navigation ── */}
+      {/* ── Navigasi Atas ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/compliance">
@@ -172,7 +170,7 @@ export default function RegulationDetailPage() {
             <DialogTrigger asChild>
               <Button variant="outline" className="h-10 px-6 border-slate-200 text-slate-700 font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-95 gap-2">
                 <Plus size={16} />
-                Add Clause
+                Tambah Item
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px] border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[24px] p-0 overflow-hidden bg-white">
@@ -184,9 +182,9 @@ export default function RegulationDetailPage() {
                     <div>
                       <DialogHeader>
                         <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                          Add New Clause
+                          Tambah Item Baru
                         </DialogTitle>
-                        <p className="text-sm font-medium text-slate-400 mt-1">Input the specific regulatory requirement for indexing.</p>
+                        <p className="text-sm font-medium text-slate-400 mt-1">Masukkan detail kewajiban regulasi untuk indeksasi.</p>
                       </DialogHeader>
                     </div>
                  </div>
@@ -194,22 +192,22 @@ export default function RegulationDetailPage() {
                  <form onSubmit={handleCreateItem} className="mt-8">
                    <div className="space-y-6">
                      <div className="grid gap-2">
-                        <Label htmlFor="ref" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Reference Number</Label>
+                        <Label htmlFor="ref" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Nomor Referensi</Label>
                         <Input 
                           id="ref" 
                           required
-                          placeholder="e.g. Article 4 Section 2" 
+                          placeholder="Misal: Pasal 1 Ayat 1" 
                           value={newItem.reference_number}
                           onChange={(e) => setNewItem({...newItem, reference_number: e.target.value})}
                           className="h-12 border-slate-100 bg-slate-50/50 rounded-xl focus:border-blue-200 focus:bg-white transition-all shadow-sm text-sm font-bold"
                         />
                      </div>
                      <div className="grid gap-2">
-                        <Label htmlFor="content" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Clause Content</Label>
+                        <Label htmlFor="content" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Isi Item</Label>
                         <Textarea 
                           id="content" 
                           required
-                          placeholder="Paste the regulatory text content here..." 
+                          placeholder="Tempel teks regulasi di sini..." 
                           value={newItem.content}
                           onChange={(e) => setNewItem({...newItem, content: e.target.value})}
                           className="min-h-[140px] border-slate-100 bg-slate-50/50 rounded-xl focus:border-blue-200 focus:bg-white transition-all shadow-sm text-sm font-medium leading-relaxed resize-none"
@@ -224,14 +222,14 @@ export default function RegulationDetailPage() {
                       onClick={() => setIsModalOpen(false)}
                       className="h-12 px-6 font-black text-[11px] text-slate-400 uppercase tracking-widest hover:bg-slate-50 rounded-xl"
                      >
-                       Dismiss
+                       Batal
                      </Button>
                      <Button 
                       type="submit" 
                       disabled={submitting}
                       className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-black text-[11px] uppercase tracking-widest px-10 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                      >
-                       {submitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Confirm Indexing"}
+                       {submitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Konfirmasi Simpan"}
                      </Button>
                    </div>
                  </form>
@@ -242,7 +240,7 @@ export default function RegulationDetailPage() {
           <Link href={`/compliance/${id}/assessment`}>
             <Button className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 gap-2">
               <ShieldCheck size={16} />
-              Start Compliance Check
+              Mulai Penilaian Kepatuhan
             </Button>
           </Link>
         </div>
@@ -262,7 +260,7 @@ export default function RegulationDetailPage() {
         </div>
       </div>
 
-      {/* ── Compact Info Cards ── */}
+      {/* ── Kartu Info Ringkas ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in duration-700 delay-100">       
         <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
           <CardContent className="p-6 flex items-center gap-4">
@@ -281,13 +279,13 @@ export default function RegulationDetailPage() {
               )}
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Current Status</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Status Saat Ini</p>
               <p className={`text-md font-black uppercase tracking-wider ${
                 regulation.status === 'Active' ? 'text-emerald-600' : 
                 regulation.status === 'Draft' ? 'text-amber-600' : 
                 regulation.status === 'Retired' ? 'text-rose-600' : 'text-slate-800'
               }`}>
-                {regulation.status}
+                {regulation.status === 'Active' ? 'Aktif' : regulation.status === 'Draft' ? 'Draf' : regulation.status === 'Retired' ? 'Non-Aktif' : regulation.status}
               </p>
             </div>
           </CardContent>
@@ -299,18 +297,18 @@ export default function RegulationDetailPage() {
               <FileText size={24} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Total Clauses</p>
-              <p className="text-md font-black text-slate-900 uppercase tracking-tight">{items.length} Items Indexed</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Total Item</p>
+              <p className="text-md font-black text-slate-900 uppercase tracking-tight">{items.length} Item Terindeks</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* ── Clause List ── */}
+      {/* ── Daftar Item ── */}
       <div className="space-y-4 pt-4 animate-in fade-in duration-1000 delay-300">
         <div className="flex items-center gap-3 px-1">
            <div className="h-6 w-1.5 bg-blue-600 rounded-full" />
-           <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Directory Klausul</h3>
+           <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Direktori Item</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.length > 0 ? (
@@ -322,7 +320,7 @@ export default function RegulationDetailPage() {
                       <FileText size={20} />
                     </div>
                     <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">
-                      CLAUSE
+                      Item
                     </div>
                   </div>
                   
@@ -331,7 +329,7 @@ export default function RegulationDetailPage() {
                       {item.content.length > 80 ? item.content.substring(0, 80) + '...' : item.content}
                     </h3>
                     <div>
-                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">REFERENCE CODE</p>
+                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">KODE REFERENSI</p>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.reference_number}</p>
                     </div>
                   </div>
@@ -347,13 +345,13 @@ export default function RegulationDetailPage() {
               </Card>
             ))
           ) : (
-            <div className="p-24 text-center bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-3xl space-y-4">
+            <div className="p-24 text-center bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-3xl space-y-4 col-span-full">
               <div className="w-16 h-16 bg-slate-100 text-slate-300 rounded-full flex items-center justify-center mx-auto">
                  <FileText size={32} />
               </div>
               <div>
-                <p className="text-slate-500 font-bold">No clauses found for this regulation.</p>
-                <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Klik tombol "Add Clause" untuk memulai indexing</p>
+                <p className="text-slate-500 font-bold">Tidak ada Item dalam regulasi ini.</p>
+                <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Klik tombol "Tambah Item" untuk memulai indexing</p>
               </div>
             </div>
           )}

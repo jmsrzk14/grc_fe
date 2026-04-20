@@ -51,14 +51,14 @@ interface Regulation {
 
 const CATEGORIES = [
   { id: 'Internal', label: 'Internal' },
-  { id: 'External', label: 'External' },
+  { id: 'External', label: 'Eksternal' },
 ];
 
 const PieChart = ({ pass = 0, fail = 0, na = 0 }: { pass: number, fail: number, na: number }) => {
   const total = pass + fail + na;
   if (total === 0) return (
-    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-[8px] text-slate-400 font-bold uppercase">
-      No Data
+    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-[8px] text-slate-400 font-bold uppercase text-center p-2">
+      Tidak Ada Data
     </div>
   );
 
@@ -198,28 +198,33 @@ export default function CompliancePage() {
                       <div className="flex flex-row items-center gap-6">
                         {/* Pie Chart Section */}
                         <div className="flex-shrink-0 bg-slate-50 p-2 rounded-xl">
-                          <PieChart
-                            pass={reg.amount_pass}
-                            fail={reg.amount_fail}
-                            na={reg.amount_na}
+                          <PieChart 
+                            pass={reg.amount_pass} 
+                            fail={reg.amount_fail} 
+                            na={reg.amount_na} 
                           />
                         </div>
-
+                        
                         {/* Main Content Area */}
                         <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm transition-all">
+                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm transition-all ${
+                              reg.status === 'Active' ? 'bg-emerald-50/50 border-emerald-100' : 
+                              reg.status === 'Draft' ? 'bg-amber-50/50 border-amber-100' : 
+                              reg.status === 'Retired' ? 'bg-rose-50/50 border-rose-100' : 'bg-slate-50 border-slate-100'
+                            }`}>
                               {reg.status === 'Active' && (
                                 <span className="relative flex h-2 w-2">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                                 </span>
                               )}
-                              <span className={`text-[10px] font-black uppercase tracking-wider ${reg.status === 'Active' ? 'text-emerald-700' :
-                                  reg.status === 'Draft' ? 'text-amber-600' :
-                                    reg.status === 'Retired' ? 'text-rose-600' : 'text-slate-600'
-                                }`}>
-                                {reg.status}
+                              <span className={`text-[10px] font-black uppercase tracking-wider ${
+                                reg.status === 'Active' ? 'text-emerald-700' : 
+                                reg.status === 'Draft' ? 'text-amber-600' : 
+                                reg.status === 'Retired' ? 'text-rose-600' : 'text-slate-600'
+                              }`}>
+                                {reg.status === 'Active' ? 'Aktif' : reg.status === 'Draft' ? 'Draf' : reg.status === 'Retired' ? 'Non-Aktif' : reg.status}
                               </span>
                             </div>
                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none ml-1">
@@ -230,18 +235,18 @@ export default function CompliancePage() {
                             {reg.title}
                           </h3>
                           <p className="text-xs text-slate-400 font-medium">
-                            {new Date(reg.issued_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
+                            Terbit: {new Date(reg.issued_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
                           </p>
                         </div>
 
                         {/* Stats Summary Area */}
                         <div className="flex flex-row gap-6 px-6 border-x border-slate-100 items-center h-12">
                           <div className="text-center">
-                            <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Pass</p>
+                            <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Sesuai</p>
                             <p className="text-sm font-bold text-emerald-500 leading-tight">{reg.amount_pass}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Fail</p>
+                            <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Gagal</p>
                             <p className="text-sm font-bold text-rose-600 leading-tight">{reg.amount_fail}</p>
                           </div>
                           <div className="text-center">

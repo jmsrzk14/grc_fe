@@ -37,13 +37,13 @@ import {
 
 /* ───────────── menu definition ───────────── */
 const menus = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Activity, label: "Audit Trail", href: "/audit" },
-  { icon: Building, label: "Governance", href: "/governance" },
-  { icon: CreditCard, label: "Risk Management", href: "/risk" },
-  { icon: User, label: "Compliance", href: "/compliance" },
-  { icon: Settings, label: "Policy Tracking", href: "/policies" },
-  { icon: Upload, label: "Upload Snapshot", href: "/upload" },
+  { icon: LayoutDashboard, label: "Beranda", href: "/" },
+  { icon: Activity, label: "Jejak Audit", href: "/audit" },
+  { icon: Building, label: "Tata Kelola", href: "/governance" },
+  { icon: CreditCard, label: "Manajemen Risiko", href: "/risk" },
+  { icon: User, label: "Kepatuhan", href: "/compliance" },
+  { icon: Settings, label: "Pelacakan Kebijakan", href: "/policies" },
+  { icon: Upload, label: "Unggah Snapshot", href: "/upload" },
 ];
 
 /* ───────────── sub-components ───────────── */
@@ -170,10 +170,10 @@ export default function AppSidebar() {
                 </button>
              </DropdownMenuTrigger>
              <DropdownMenuContent className="w-56 mb-2 bg-[#1c2437] border-[#38425a] text-slate-200">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-[#38425a]" />
-                <DropdownMenuItem className="focus:bg-[#28324a] focus:text-white cursor-pointer">Profile Settings</DropdownMenuItem>
-                <DropdownMenuItem className="focus:bg-[#28324a] focus:text-white cursor-pointer text-rose-400">Logout</DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-[#28324a] focus:text-white cursor-pointer">Pengaturan Profil</DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-[#28324a] focus:text-white cursor-pointer text-rose-400">Keluar</DropdownMenuItem>
              </DropdownMenuContent>
            </DropdownMenu>
         </div>

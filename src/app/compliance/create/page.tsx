@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
   Save, 
-  Trash2, 
   ShieldCheck,
   FileBadge,
 } from "lucide-react";
@@ -77,127 +75,159 @@ export default function CreateCompliancePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between mt-6">
-          <div className="flex items-center gap-4">
-             <Link href="/compliance">
-               <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-slate-900 border border-slate-100 bg-white">
-                 <ArrowLeft size={18} />
-               </Button>
-             </Link>
-             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Tambah Regulasi</h2>
+    <div className="max-w-4xl mx-auto space-y-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => router.back()}
+            className="rounded-xl h-10 w-10 border-slate-200 text-slate-500 hover:text-slate-900 shadow-sm transition-all active:scale-95"
+          >
+            <ArrowLeft size={18} />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
+              Daftarkan Regulasi Baru
+            </h1>
+            <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">
+              Pusat Kepatuhan & Tata Kelola
+            </p>
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Form Section ── */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardContent className="p-8 space-y-6">
-               <div className="grid gap-3">
-                 <Label htmlFor="title" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Judul Regulasi</Label>
-                 <Input 
-                   id="title" 
-                   required
-                   value={formData.title}
-                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                   placeholder="Nama kewajiban kepatuhan..." 
-                   className="h-12 border-slate-200 bg-slate-50/30 focus:bg-white transition-all rounded-xl shadow-sm" 
-                 />
-               </div>
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-6">
+            <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden bg-white">
+              <CardHeader className="bg-slate-900 px-8 py-6">
+                <CardTitle className="text-white text-lg font-black flex items-center gap-3">
+                  <FileBadge className="text-blue-400" />
+                  Informasi Utama
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="title" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">
+                    Judul Regulasi
+                  </Label>
+                  <Input 
+                    id="title"
+                    required
+                    placeholder="Masukkan nama lengkap regulasi..."
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    className="h-14 border-slate-100 bg-slate-50/50 rounded-2xl focus:bg-white focus:border-blue-200 transition-all text-sm font-bold shadow-sm"
+                  />
+                </div>
 
-               <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                   <div className="grid gap-3">
-                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tipe Regulasi</Label>
+                    <Label htmlFor="type" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">
+                      Tipe Regulasi
+                    </Label>
                     <Select 
-                      value={formData.regulation_type}
-                      onValueChange={(v) => setFormData({ ...formData, regulation_type: v })}
+                      value={formData.regulation_type} 
+                      onValueChange={(val) => setFormData({...formData, regulation_type: val})}
                     >
-                      <SelectTrigger className="h-12 border-slate-200 bg-slate-50/30 rounded-xl">
+                      <SelectTrigger className="h-14 border-slate-100 bg-slate-50/50 rounded-2xl focus:bg-white focus:border-blue-200 transition-all font-bold">
                         <SelectValue placeholder="Pilih Tipe" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="POJK">POJK</SelectItem>
-                        <SelectItem value="OJK">OJK</SelectItem>
-                        <SelectItem value="BI">BI</SelectItem>
-                        <SelectItem value="Internal">Internal Document</SelectItem>
+                        <SelectItem value="POJK">POJK (Otoritas Jasa Keuangan)</SelectItem>
+                        <SelectItem value="OJK">OJK (Surat Edaran)</SelectItem>
+                        <SelectItem value="BI">BI (Bank Indonesia)</SelectItem>
+                        <SelectItem value="UU">UU (Undang-Undang)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-3">
-                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Kategori</Label>
-                    <Select 
-                      value={formData.category}
-                      onValueChange={(v) => setFormData({ ...formData, category: v })}
-                    >
-                      <SelectTrigger className="h-12 border-slate-200 bg-slate-50/30 rounded-xl">
-                        <SelectValue placeholder="Pilih Kategori" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Internal">Internal</SelectItem>
-                        <SelectItem value="External">External</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-               </div>
-
-               <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="grid gap-3">
-                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Status</Label>
-                    <Select 
-                      value={formData.status}
-                      onValueChange={(v) => setFormData({ ...formData, status: v })}
-                    >
-                      <SelectTrigger className="h-12 border-slate-200 bg-slate-50/30 rounded-xl">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Draft">Draft</SelectItem>
-                        <SelectItem value="Retired">Retired</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="issued_date" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Tanggal Dikeluarkan</Label>
+                    <Label htmlFor="date" className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">
+                      Tanggal Penetapan
+                    </Label>
                     <Input 
-                      id="issued_date" 
-                      type="date" 
+                      id="date"
+                      type="date"
                       required
                       value={formData.issued_date}
-                      onChange={(e) => setFormData({ ...formData, issued_date: e.target.value })}
-                      className="h-12 border-slate-200 bg-slate-50/30 rounded-xl" 
+                      onChange={(e) => setFormData({...formData, issued_date: e.target.value})}
+                      className="h-14 border-slate-100 bg-slate-50/50 rounded-2xl focus:bg-white focus:border-blue-200 transition-all font-bold"
                     />
                   </div>
-               </div>
-            </CardContent>
-          </Card>
-        </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* ── Actions Sidebar ── */}
-        <div className="space-y-4">
-           <Card className="border-none shadow-sm text-white rounded-2xl overflow-hidden">
-             <CardContent className="p-6 space-y-6">
-               <div className="space-y-3">
-                 <Button 
-                   type="submit"
-                   disabled={loading}
-                   className="w-full h-14 bg-blue-600 text-white hover:bg-blue-700 font-black shadow-xl shadow-blue-500/20 rounded-xl transition-all active:scale-95"
-                 >
-                   {loading ? "MENYIMPAN..." : <><Save size={18} className="mr-2" /> Tambah Regulasi</>}
-                 </Button>
+          <div className="space-y-6">
+            <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden bg-white">
+              <CardHeader className="bg-slate-50 px-8 py-5 border-b border-slate-100">
+                <CardTitle className="text-slate-900 text-xs font-black uppercase tracking-widest">
+                  Pengaturan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8 space-y-8">
+                <div className="grid gap-4">
+                  <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">
+                    Kategori
+                  </Label>
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(val) => setFormData({...formData, category: val})}
+                  >
+                    <SelectTrigger className="h-12 border-slate-100 bg-slate-50 rounded-xl font-bold">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Internal">Internal</SelectItem>
+                      <SelectItem value="External">Eksternal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                 <Link href="/compliance" className="block">
-                   <Button variant="outline" type="button" className="w-full h-12 border-slate-900 bg-transparent text-slate-900 hover:bg-slate-800 hover:text-white font-bold rounded-xl">
-                     BATAL
-                   </Button>
-                 </Link>
-               </div>
-             </CardContent>
-           </Card>
+                <div className="grid gap-4">
+                  <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">
+                    Status Awal
+                  </Label>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      variant={formData.status === "Active" ? "default" : "outline"}
+                      onClick={() => setFormData({...formData, status: "Active"})}
+                      className={`flex-1 rounded-xl h-12 font-bold ${formData.status === "Active" ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+                    >
+                      Aktif
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant={formData.status === "Draft" ? "default" : "outline"}
+                      onClick={() => setFormData({...formData, status: "Draft"})}
+                      className="flex-1 rounded-xl h-12 font-bold"
+                    >
+                      Draf
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="w-full h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-md uppercase tracking-widest rounded-3xl shadow-xl shadow-blue-500/30 transition-all active:scale-95 flex items-center justify-center gap-3"
+            >
+              <Save size={22} />
+              {loading ? "Menyimpan..." : "Simpan Regulasi"}
+            </Button>
+            
+            <div className="p-6 bg-blue-50 text-blue-700 rounded-3xl border border-blue-100/50 flex items-start gap-4">
+               <ShieldCheck className="mt-1 flex-shrink-0" size={20} />
+               <p className="text-xs font-bold leading-relaxed">
+                 Data yang Anda simpan akan masuk ke dalam database kepatuhan dan siap untuk dilakukan penilaian kepatuhan segera.
+               </p>
+            </div>
+          </div>
         </div>
       </form>
     </div>
