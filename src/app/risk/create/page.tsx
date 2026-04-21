@@ -3,17 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { 
-  ShieldAlert, 
   ArrowLeft, 
   Save, 
-  Trash2, 
-  AlertTriangle,
-  Info,
-  ChevronRight,
-  UserCircle
+  Trash2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
@@ -24,177 +20,124 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import HeaderTitle from "@/components/layout/HeaderTitle";
 
 export default function CreateRiskPage() {
+  const { toast } = useToast();
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">GRC DOTS</p>
-        <div className="flex items-center justify-between mt-6">
-          <div className="flex items-center gap-4">
-             <Link href="/risk">
-               <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-slate-900 border border-slate-100 bg-white">
-                 <ArrowLeft size={18} />
-               </Button>
-             </Link>
-             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Identify New Risk</h2>
-          </div>
+    <div className="space-y-6 animate-in fade-in duration-500 w-full px-2 pb-10">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" asChild className="h-9 w-9 rounded-md border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm">
+            <Link href="/risk">
+              <ArrowLeft className="h-4 w-4 text-slate-500" />
+            </Link>
+          </Button>
+          <HeaderTitle title="Registrasi Risiko" />
+        </div>
+        <div className="flex items-center gap-2">
+           <Button variant="outline" className="h-9 px-4 bg-white border border-slate-200 text-slate-600 rounded-md text-sm font-medium hover:bg-slate-50 transition-all shadow-sm">
+              <Trash2 className="h-4 w-4 mr-1.5" /> Batal
+           </Button>
+           <Button onClick={() => toast({ title: "Berhasil Disimpan", description: "Catatan baru telah valid terekam ke database internal GRC." })} className="h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm">
+              <Save className="h-4 w-4 mr-1.5" /> Simpan Risiko
+           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* ── Left Column: Form Section ── */}
-        <div className="lg:col-span-3 space-y-6">
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-               <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Risk Identification</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* ── Utama: Formulir ── */}
+        <div className="lg:col-span-8 space-y-6">
+          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Definisi & Klasifikasi</CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-6">
-               <div className="grid gap-3">
-                 <Label htmlFor="title" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Risk Title / Definition</Label>
-                 <Input id="title" placeholder="Describe the risk event clearly..." className="h-12 border-slate-200 text-base font-medium" />
+            <CardContent className="p-6 space-y-6">
+               <div className="grid gap-2">
+                 <Label htmlFor="title" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Judul Risiko</Label>
+                 <Input id="title" placeholder="Masukan judul kejadian risiko..." className="h-10 border-slate-200 rounded-md bg-slate-50/30 focus:bg-white focus:ring-1 focus:ring-primary/20 transition-all" />
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="grid gap-3">
-                    <Label htmlFor="id" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Risk ID</Label>
-                    <Input id="id" defaultValue="RISK-2026-001" className="h-11 border-slate-200 bg-slate-50 font-mono font-bold" readOnly />
+                  <div className="grid gap-2">
+                    <Label htmlFor="id" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Risk ID</Label>
+                    <Input id="id" defaultValue="RSK-2024-009" className="h-10 border-slate-200 bg-slate-100 font-mono text-xs rounded-md" readOnly />
                   </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="category" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Risk Category</Label>
+                  <div className="grid gap-2">
+                    <Label htmlFor="category" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Kategori</Label>
                     <Select>
-                      <SelectTrigger className="h-11 border-slate-200">
-                        <SelectValue placeholder="Select functional category" />
+                      <SelectTrigger className="h-10 border-slate-200 rounded-md bg-slate-50/30">
+                        <SelectValue placeholder="Pilih Kategori" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="operational">Operational</SelectItem>
-                        <SelectItem value="financial">Financial</SelectItem>
-                        <SelectItem value="strategic">Strategic</SelectItem>
-                        <SelectItem value="compliance">Compliance</SelectItem>
-                        <SelectItem value="it">IT & Cybersecurity</SelectItem>
+                        <SelectItem value="pasar">Pasar</SelectItem>
+                        <SelectItem value="operasional">Operasional</SelectItem>
+                        <SelectItem value="kepatuhan">Kepatuhan</SelectItem>
+                        <SelectItem value="kredit">Kredit</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                  <div className="grid gap-3">
-                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Inherent Impact</Label>
-                    <div className="grid grid-cols-5 gap-1">
-                      {[1, 2, 3, 4, 5].map((lv) => (
-                        <button key={lv} className={`h-8 rounded-md border flex items-center justify-center text-xs font-bold transition-all ${
-                          lv === 4 ? "bg-rose-500 text-white border-rose-600" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300"
-                        }`}>
-                          {lv}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Likelihood Probability</Label>
-                    <div className="grid grid-cols-5 gap-1">
-                      {[1, 2, 3, 4, 5].map((lv) => (
-                        <button key={lv} className={`h-8 rounded-md border flex items-center justify-center text-xs font-bold transition-all ${
-                          lv === 3 ? "bg-amber-500 text-white border-amber-600" : "bg-white text-slate-400 border-slate-200 hover:border-slate-300"
-                        }`}>
-                          {lv}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-               </div>
-
-               <div className="grid gap-3 pt-2">
-                 <Label htmlFor="desc" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Risk Analysis / Details</Label>
-                 <Textarea id="desc" placeholder="Provide more context on root causes and potential consequences..." className="min-h-[140px] border-slate-200 leading-relaxed" />
+               <div className="grid gap-2">
+                 <Label htmlFor="desc" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Analisis (Penyebab & Dampak)</Label>
+                 <Textarea id="desc" placeholder="Jelaskan akar penyebab dan potensi konsekuensi..." className="min-h-[120px] border-slate-200 rounded-md bg-slate-50/30 focus:bg-white transition-all text-sm" />
                </div>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-               <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">Ownership \u0026 Treatment</CardTitle>
+          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Kepemilikan</CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-6">
-               <div className="grid gap-3">
-                 <Label htmlFor="owner" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Risk Owner</Label>
+            <CardContent className="p-6">
+               <div className="grid gap-2">
+                 <Label htmlFor="owner" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Risk Owner</Label>
                  <Select>
-                    <SelectTrigger className="h-11 border-slate-200">
-                      <div className="flex items-center gap-2">
-                        <UserCircle size={16} className="text-slate-400" />
-                        <SelectValue placeholder="Select department / unit head" />
-                      </div>
+                    <SelectTrigger className="h-10 border-slate-200 rounded-md bg-slate-50/30">
+                       <SelectValue placeholder="Pilih Penanggung Jawab" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="it-head">Kepala Divisi TI</SelectItem>
-                      <SelectItem value="ops-head">Kepala Divisi Operasional</SelectItem>
-                      <SelectItem value="risk-head">Kepala Divisi Risk</SelectItem>
+                      <SelectItem value="it">Divisi Teknologi Informasi</SelectItem>
+                      <SelectItem value="ops">Divisi Operasional</SelectItem>
+                      <SelectItem value="compliance">Divisi Compliance</SelectItem>
                     </SelectContent>
                  </Select>
-               </div>
-               <div className="grid gap-3">
-                 <Label htmlFor="mitigation" className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Proposed Mitigation Strategy</Label>
-                 <Textarea id="mitigation" placeholder="How will we control this risk?" className="min-h-[100px] border-slate-200" />
                </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* ── Right Column: Control Sidebar ── */}
-        <div className="space-y-4">
-           <Card className="border-none shadow-sm bg-slate-900 text-white rounded-xl overflow-hidden">
-             <div className="p-6 bg-rose-600 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                   <AlertTriangle size={20} />
-                   <h3 className="font-bold">Summary Risk</h3>
+        {/* ── Samping: Score ── */}
+        <div className="lg:col-span-4">
+           <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden sticky top-24">
+             <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Ringkasan Skor</CardTitle>
+             </CardHeader>
+             <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                   <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-500 uppercase tracking-wide">Impact Score</span>
+                      <span className="font-bold text-foreground">4 / 5</span>
+                   </div>
+                   <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-500 uppercase tracking-wide">Likelihood</span>
+                      <span className="font-bold text-foreground">3 / 5</span>
+                   </div>
+                   <div className="flex justify-between items-center pt-4 border-t border-border text-sm">
+                      <span className="font-bold text-slate-700">Total Inherit</span>
+                      <span className="font-black text-rose-600">12.00</span>
+                   </div>
                 </div>
-                <span className="text-xs font-mono font-bold bg-white/20 px-2 py-1 rounded">SCORE 12</span>
-             </div>
-             <CardContent className="p-6 space-y-4">
-               <div className="space-y-4">
-                  <div className="flex justify-between items-center pb-3 border-b border-white/10">
-                     <span className="text-xs text-slate-400 uppercase tracking-widest">Impact</span>
-                     <span className="text-sm font-bold text-rose-400">4 / High</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-3 border-b border-white/10">
-                     <span className="text-xs text-slate-400 uppercase tracking-widest">Likelihood</span>
-                     <span className="text-sm font-bold text-amber-400">3 / Medium</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                     <span className="text-xs text-slate-400 uppercase tracking-widest">Final Status</span>
-                     <span className="text-sm font-bold text-rose-500 uppercase animate-pulse">Critical</span>
-                  </div>
-               </div>
-               
-               <div className="pt-6 space-y-3">
-                 <Button className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold gap-2">
-                   <Save size={18} /> Regist Risk
-                 </Button>
-                 <Button variant="ghost" className="w-full h-12 text-slate-400 hover:text-white hover:bg-white/10 font-bold">
-                   Save for Review
-                 </Button>
-               </div>
+
+                <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-border">
+                   <p className="text-[11px] text-slate-500 leading-relaxed italic font-medium">
+                      Risiko tingkat <span className="text-rose-600 font-bold underline">Critical</span> wajib memerlukan lampiran bukti mitigasi sebelum registrasi disetujui.
+                   </p>
+                </div>
              </CardContent>
            </Card>
-
-           <Card className="border-none shadow-sm bg-white border-slate-200 rounded-xl">
-             <CardContent className="p-5">
-               <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
-                    <Info size={16} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-tight">Requirement</h4>
-                    <p className="text-[11px] text-slate-500 leading-relaxed mt-1">Identifikasi risiko harus dilengkapi dengan bukti pendukung jika nilai skor di atas 10.</p>
-                  </div>
-               </div>
-             </CardContent>
-           </Card>
-
-           <Button variant="ghost" className="w-full text-rose-500 hover:text-rose-600 hover:bg-rose-50 font-bold gap-2 group transition-colors">
-             <Trash2 size={16} className="group-hover:animate-bounce" /> Discard Draft
-           </Button>
         </div>
       </div>
     </div>

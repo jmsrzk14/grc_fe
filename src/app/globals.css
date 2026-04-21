@@ -2,73 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.5rem;
+  /* ── Base ── */
+  --background: oklch(0.975 0.003 250);
+  --foreground: oklch(0.185 0.02 265);
+  /* ── Card ── */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.185 0.02 265);
+  /* ── Popover ── */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.185 0.02 265);
+  /* ── Primary — corporate banking blue ── */
+  --primary: oklch(0.385 0.15 262);
+  --primary-foreground: oklch(1 0 0);
+  /* ── Secondary ── */
+  --secondary: oklch(0.943 0.01 255);
+  --secondary-foreground: oklch(0.22 0.025 265);
+  /* ── Muted ── */
+  --muted: oklch(0.96 0.005 250);
+  --muted-foreground: oklch(0.54 0.02 260);
+  /* ── Accent ── */
+  --accent: oklch(0.943 0.01 255);
+  --accent-foreground: oklch(0.22 0.025 265);
+  /* ── Destructive ── */
+  --destructive: oklch(0.577 0.245 27.325);
+  /* ── Border / Input / Ring ── */
+  --border: oklch(0.915 0.007 260);
+  --input: oklch(0.915 0.007 260);
+  --ring: oklch(0.385 0.15 262);
+  
+  /* Sidebar Variables - Mapped for v3 Compatibility */
+  --sidebar-background: oklch(0.2 0.04 265);     /* Deep Navy */
+  --sidebar: oklch(0.2 0.04 265);                /* Alias */
+  --sidebar-foreground: oklch(0.75 0.02 260);
+  --sidebar-primary: oklch(0.75 0.02 260);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.25 0.04 265);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.28 0.035 265);
+  --sidebar-ring: oklch(0.385 0.15 262);
+}
+
 @layer base {
-  :root {
-    --background: 210 20% 98%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 220 14% 96%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.6rem;
-
-    /* Sidebar Variables - Dark Theme */
-    --sidebar-background: 223 33% 13%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 223 25% 20%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 223 20% 20%;
-    --sidebar-ring: 217 91% 60%;
+  html {
+    /* Menaikkan ukuran dasar font secara global ke 17px */
+    font-size: 106.25%;
+    @apply antialiased;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+  * {
+    @apply border-border outline-none;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.01em; /* Membuat teks terlihat lebih rapat dan premium */
+  }
+
+  ::selection {
+    background-color: var(--primary);
+    color: white;
   }
 }
 
-/* ── Global Scrollbar Customization ── */
-html, body {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+@layer utilities {
+  .glass {
+    @apply bg-background/60 backdrop-blur-md border border-white/10;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.dark html, .dark body {
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-}
-
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -79,60 +129,53 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  background: oklch(0.915 0.007 260);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: oklch(0.85 0.01 260);
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+/* Sidebar scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
 }
 
-/* ── Sidebar Scrollbar ── */
-[data-sidebar="sidebar"] ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
 
-[data-sidebar="sidebar"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Hide horizontal overflow in Sidebar */
-[data-sidebar="sidebar"],
-[data-sidebar="sidebar"] * {
-  overflow-x: hidden !important;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-    font-family: var(--font-inter), sans-serif !important;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-inter), sans-serif !important;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.letter-tighter {
-  letter-spacing: -0.05em;
+/* Animation helpers */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-/* Ensure images and small items don't break flex containers */
-img, svg, button {
-  max-width: 100%;
-}
-/* ── Custom Animations ── */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+@keyframes slide-in-from-bottom {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }
 
-.animate-shake {
-  animation: shake 0.2s ease-in-out 0s 2;
+.animate-in {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
 }
+
+.fade-in { animation-name: fade-in; }
+.slide-in-from-bottom-2 { animation-name: slide-in-from-bottom; }

@@ -3,18 +3,15 @@
 import React from "react";
 import Link from "next/link";
 import { 
-  FileText, 
   ArrowLeft, 
   Save, 
   Trash2, 
-  CheckCircle2, 
-  MoreVertical, 
   CloudUpload,
-  Info,
-  ShieldCheck
+  Info
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
@@ -24,54 +21,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import HeaderTitle from "@/components/layout/HeaderTitle";
 
 export default function CreatePolicyPage() {
+  const { toast } = useToast();
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">GRC DOTS</p>
-        <div className="flex items-center justify-between mt-6">
-          <div className="flex items-center gap-4">
-             <Link href="/policies">
-               <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-slate-900 border border-slate-100 bg-white">
-                 <ArrowLeft size={18} />
-               </Button>
-             </Link>
-             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Register New Policy</h2>
-          </div>
+    <div className="space-y-6 animate-in fade-in duration-500 w-full px-2 pb-10">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" asChild className="h-9 w-9 rounded-md border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm">
+            <Link href="/policies">
+              <ArrowLeft className="h-4 w-4 text-slate-500" />
+            </Link>
+          </Button>
+          <HeaderTitle title="Registrasi Kebijakan" />
+        </div>
+        <div className="flex items-center gap-2">
+           <Button variant="outline" className="h-9 px-4 bg-white border border-slate-200 text-slate-600 rounded-md text-sm font-medium hover:bg-slate-50 transition-all shadow-sm">
+              <Trash2 className="h-4 w-4 mr-1.5" /> Batal
+           </Button>
+           <Button onClick={() => toast({ title: "Berhasil Disimpan", description: "Catatan baru telah valid terekam ke database internal GRC." })} className="h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm">
+              <Save className="h-4 w-4 mr-1.5" /> Simpan Kebijakan
+           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Main Section ── */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-               <CardTitle className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Document Registry</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* ── Utama: Formulir ── */}
+        <div className="lg:col-span-8 space-y-6">
+          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Detail Dokumen & Registrasi</CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-6">
-               <div className="grid gap-3">
-                 <Label htmlFor="title" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Policy / Document Title</Label>
-                 <Input id="title" placeholder="e.g. Kebijakan Anti-Fraud 2026" className="h-12 border-slate-200" />
+            <CardContent className="p-6 space-y-6">
+               <div className="grid gap-2">
+                 <Label htmlFor="title" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Judul Kebijakan</Label>
+                 <Input id="title" placeholder="Masukan judul dokumen atau kebijakan..." className="h-10 border-slate-200 rounded-md bg-slate-50/30 focus:bg-white focus:ring-1 focus:ring-primary/20 transition-all" />
                </div>
 
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-3">
-                    <Label htmlFor="id" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Policy ID</Label>
-                    <Input id="id" defaultValue="POL-2026-XX" className="h-11 border-slate-200 bg-slate-50/50" />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid gap-2">
+                    <Label htmlFor="id" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Policy ID</Label>
+                    <Input id="id" defaultValue="POL-2026-001" className="h-10 border-slate-200 bg-slate-100 font-mono text-xs rounded-md" readOnly />
                   </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="ver" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Initial Version</Label>
-                    <Input id="ver" defaultValue="v1.0.0" className="h-11 border-slate-200" />
+                  <div className="grid gap-2">
+                    <Label htmlFor="version" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Versi Awal</Label>
+                    <Input id="version" defaultValue="v1.0.0" className="h-10 border-slate-200 rounded-md bg-slate-50/30 focus:bg-white transition-all text-sm" />
                   </div>
                </div>
 
-               <div className="grid gap-3 pt-2">
-                 <Label htmlFor="approver" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Final Approver</Label>
+               <div className="grid gap-2">
+                 <Label htmlFor="approver" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Final Approver</Label>
                  <Select>
-                    <SelectTrigger className="h-11 border-slate-200">
-                      <SelectValue placeholder="Pilih Otoritas Penyetuju" />
+                    <SelectTrigger className="h-10 border-slate-200 rounded-md bg-slate-50/30">
+                       <SelectValue placeholder="Pilih Otoritas Penyetuju" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ceo">Direktur Utama</SelectItem>
@@ -83,59 +87,48 @@ export default function CreatePolicyPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-slate-50/50 rounded-xl overflow-hidden border-2 border-dashed border-slate-200">
+          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden border-dashed">
             <CardContent className="p-12 flex flex-col items-center justify-center text-center gap-4">
-               <div className="p-4 bg-white rounded-2xl shadow-sm text-slate-400">
-                  <CloudUpload size={40} />
+               <div className="p-4 bg-muted/50 rounded-2xl text-slate-400">
+                  <CloudUpload size={32} />
                </div>
                <div>
-                  <h3 className="text-lg font-bold text-slate-800">Upload Policy Draft</h3>
-                  <p className="text-sm text-slate-400 mt-1">Upload dokumen .pdf atau .docx untuk proses review.</p>
+                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Unggah Draf Kebijakan</h3>
+                  <p className="text-xs text-slate-400 mt-1 font-medium italic">Format yang didukung: .pdf, .docx (Maks. 10MB)</p>
                </div>
-               <Button variant="outline" className="mt-4 px-8 h-10 border-slate-200 font-bold text-slate-600 bg-white">Pilih File</Button>
+               <Button variant="outline" className="mt-2 h-9 px-4 bg-white border border-slate-200 text-slate-600 rounded-md text-sm font-medium hover:bg-slate-50 transition-all shadow-sm">Pilih Berkas</Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* ── Sidebar Section ── */}
-        <div className="space-y-4">
-           <Card className="border-none shadow-sm bg-slate-900 text-white rounded-xl overflow-hidden">
-             <div className="h-1 bg-emerald-500 w-full" />
-             <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                   <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400 border border-white/10">
-                      <ShieldCheck size={20} />
+        {/* ── Samping: Status & Info ── */}
+        <div className="lg:col-span-4 space-y-6">
+           <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden sticky top-24">
+             <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Informasi Tambahan</CardTitle>
+             </CardHeader>
+             <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                   <div className="flex items-start gap-4">
+                      <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                        <Info size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">Catatan Alur Kerja</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed mt-1 font-medium italic">
+                          Sistem akan menyimpan dokumen ini sebagai rancangan (*draft*) sebelum diteruskan untuk peninjauan otoritas terkait.
+                        </p>
+                      </div>
                    </div>
-                   <h3 className="font-bold">Privacy Check</h3>
-                </div>
-                
-                <div className="space-y-4 mb-8">
-                   <p className="text-xs text-slate-400 leading-relaxed italic">
-                      "Pastikan dokumen kebijakan tidak mengandung data rahasia nasabah kecuali diperlukan."
-                   </p>
                 </div>
 
-                <div className="space-y-2">
-                   <Button className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold gap-2">
-                     <Save size={18} /> Register Policy
-                   </Button>
-                   <Button variant="ghost" className="w-full h-11 text-slate-500 hover:text-white font-bold">
-                     Preview Mode
-                   </Button>
+                <div className="pt-4">
+                  <Button className="w-full h-9 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm">
+                    Simpan sebagai Draf
+                  </Button>
                 </div>
              </CardContent>
            </Card>
-
-           <div className="p-6 bg-blue-50/50 border border-blue-100/50 rounded-xl flex gap-3">
-              <Info size={18} className="text-blue-500 shrink-0" />
-              <p className="text-[11px] text-blue-700 font-medium leading-relaxed">
-                 Sistem akan menyimpan dokumen ini sebagai rancangan (draft) sebelum disetujui oleh approver.
-              </p>
-           </div>
-           
-           <Button variant="ghost" className="w-full text-rose-500 font-bold uppercase tracking-widest text-[10px] gap-2">
-              <Trash2 size={14} /> Discard Policy
-           </Button>
         </div>
       </div>
     </div>

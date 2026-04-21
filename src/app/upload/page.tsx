@@ -1,24 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Upload, 
-  FileText, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  Search,
+import {
+  CheckCircle2,
   History,
   CloudUpload,
-  ArrowRight,
-  Database
+  Database,
+  FileText,
+  ChevronRight
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import HeaderTitle from "@/components/layout/HeaderTitle";
 
 export default function UploadSnapshotPage() {
-  const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -27,151 +23,123 @@ export default function UploadSnapshotPage() {
     setUploading(true);
     let p = 0;
     const interval = setInterval(() => {
-      p += 10;
+      p += 5;
       setProgress(p);
       if (p >= 100) {
         clearInterval(interval);
         setUploading(false);
         setCompleted(true);
       }
-    }, 200);
+    }, 100);
   };
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">GRC DOTS</p>
-        <div className="flex items-center justify-between mt-6">
-          <h2 className="text-[32px] font-bold text-slate-900 tracking-tight">Upload Snapshot</h2>
-          <Button variant="outline" className="h-10 px-4 font-bold text-slate-600 gap-2 border-slate-200">
-            <History size={16} /> History
-          </Button>
-        </div>
+    <div className="space-y-6 animate-in fade-in duration-500 w-full px-2 pb-10">
+      <div className="flex items-center justify-between">
+        <HeaderTitle title="Upload Snapshot" />
+        <Button variant="outline" className="h-9 px-3 bg-white border border-slate-200 text-slate-600 rounded-md text-sm font-medium hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-sm">
+          <History size={14} className="text-muted-foreground" /> Riwayat Snapshot
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Upload Area ── */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white rounded-xl overflow-hidden">
-            <CardContent className="p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* ── Main Upload Section ── */}
+        <div className="lg:col-span-8 space-y-6">
+          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Sinkronisasi Data Lingkungan</CardTitle>
+            </CardHeader>
+            <CardContent className="p-12">
               {!completed ? (
-                <div 
-                  className={`
-                    border-2 border-dashed rounded-2xl p-16 flex flex-col items-center gap-6 transition-all duration-300
-                    ${dragActive ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-slate-50/50 hover:bg-slate-50"}
-                  `}
-                  onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-                  onDragLeave={() => setDragActive(false)}
-                  onDrop={(e) => { e.preventDefault(); setDragActive(false); }}
-                >
-                  <div className="h-20 w-20 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
-                    <CloudUpload size={40} />
+                <div className="flex flex-col items-center text-center space-y-8">
+                  <div className="h-16 w-16 rounded-xl bg-muted/50 border border-border flex items-center justify-center text-slate-400">
+                    <CloudUpload size={28} />
                   </div>
-                  
-                  <div className="text-center space-y-2">
-                    <h3 className="text-xl font-bold text-slate-800">Drag & Drop Snapshot Data</h3>
-                    <p className="text-sm text-slate-500 max-w-sm mx-auto">
-                       Upload data snapshot terbaru dalam format <span className="font-bold text-slate-800">.xlsx</span> atau <span className="font-bold text-slate-800">.json</span> untuk sinkronisasi sistem GRC.
+
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-bold text-foreground uppercase tracking-tight">Pilih Berkas Snapshot</h3>
+                    <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed font-medium italic">
+                      Gunakan format <span className="font-bold">.xlsx</span> atau <span className="font-bold">.json</span> yang sesuai dengan skema otorisasi GRC.
                     </p>
                   </div>
 
                   {uploading ? (
-                    <div className="w-full max-w-sm space-y-4">
-                      <Progress value={progress} className="h-2 bg-slate-100" />
-                      <p className="text-xs font-bold text-center text-blue-600 animate-pulse uppercase tracking-widest">Processing Data {progress}%...</p>
+                    <div className="w-full max-w-xs space-y-3">
+                      <Progress value={progress} className="h-1 bg-muted" />
+                      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        <span>Memproses...</span>
+                        <span>{progress}%</span>
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex gap-4 mt-4">
-                      <Button variant="outline" className="h-12 px-8 font-bold text-slate-700 bg-white border-slate-200 hover:bg-slate-50">
-                        Pilih File
+                    <div className="flex items-center gap-3">
+                      <Button variant="outline" className="h-9 px-6 text-xs font-bold uppercase tracking-widest border-slate-200 rounded-md hover:bg-slate-50">
+                        Berkas
                       </Button>
-                      <Button onClick={handleUpload} className="h-12 px-8 font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all">
-                        Upload Snapshot
+                      <Button onClick={handleUpload} className="h-9 px-6 text-xs font-bold uppercase tracking-widest bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all">
+                        Mulai Sinkron
                       </Button>
                     </div>
                   )}
+
+                  <div className="flex items-center gap-8 pt-6 border-t border-border w-full justify-center">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      <FileText size={12} /> XLSX Template
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      <Database size={12} /> JSON Schema
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-6 py-8">
-                  <div className="h-20 w-20 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-100 scale-110 transition-transform duration-500">
-                    <CheckCircle2 size={40} />
+                <div className="flex flex-col items-center text-center space-y-6 py-6 animate-in zoom-in-95 duration-300">
+                  <div className="h-12 w-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                    <CheckCircle2 size={24} />
                   </div>
-                  <div className="text-center space-y-2">
-                    <h3 className="text-xl font-bold text-slate-800">Upload Berhasil!</h3>
-                    <p className="text-sm text-slate-500 font-medium italic">
-                      Snapshot <span className="font-mono text-blue-600 font-bold">2026-04-16_GRC_SNAP.xlsx</span> telah berhasil diproses.
-                    </p>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-foreground uppercase tracking-tight">Sinkronisasi Berhasil</h3>
+                    <p className="text-xs text-muted-foreground font-medium italic">Data snapshot telah diintegrasikan ke dalam lingkungan audit.</p>
                   </div>
-                  <Button onClick={() => setCompleted(false)} variant="link" className="text-blue-500 font-bold uppercase tracking-widest text-[11px]">
-                    Upload Snapshot Lainnya
+                  <Button onClick={() => setCompleted(false)} variant="link" className="text-primary font-bold text-xs uppercase tracking-widest">
+                    Unggah Baru
                   </Button>
                 </div>
               )}
             </CardContent>
           </Card>
-
-          {/* ── Guidelines ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="border-none shadow-sm bg-blue-50/50 border-blue-100">
-              <CardContent className="p-4 flex gap-3">
-                <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0">
-                  <Database size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">Auto-Refinement</h4>
-                  <p className="text-[11px] text-slate-500 leading-relaxed mt-1">Sistem akan otomatis menyesuaikan data Risk, Compliance, dan Governance berdasarkan snapshot terbaru.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-none shadow-sm bg-slate-100/50 border-slate-200">
-              <CardContent className="p-4 flex gap-3">
-                <div className="h-10 w-10 rounded-lg bg-slate-800 flex items-center justify-center text-white shrink-0">
-                  <AlertCircle size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">Peringatan Data</h4>
-                  <p className="text-[11px] text-slate-500 leading-relaxed mt-1">Pastikan skema data sesuai dengan template standar GRC DOTS untuk menghindari kegagalan sinkronisasi.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
-        {/* ── Instructions / Sidebar Info ── */}
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm bg-white overflow-hidden">
-             <div className="h-1 bg-blue-600 w-full" />
-             <CardContent className="p-6">
-               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6">Informasi Snapshot</h3>
-               <div className="space-y-6">
-                 <div className="flex gap-4">
-                    <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[12px] border border-slate-100">1</div>
-                    <div className="flex-1">
-                       <p className="text-[13px] font-bold text-slate-700">Persiapkan Data</p>
-                       <p className="text-[11px] text-slate-400 mt-1">Gunakan format Excel (.xlsx) dengan kolom yang sudah ditentukan.</p>
-                    </div>
-                 </div>
-                 <div className="flex gap-4">
-                    <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[12px] border border-slate-100">2</div>
-                    <div className="flex-1">
-                       <p className="text-[13px] font-bold text-slate-700">Validasi Sistem</p>
-                       <p className="text-[11px] text-slate-400 mt-1">Sistem akan memeriksa integritas data sebelum melakukan update database.</p>
-                    </div>
-                 </div>
-                 <div className="flex gap-4">
-                    <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[12px] border border-slate-100">3</div>
-                    <div className="flex-1">
-                       <p className="text-[13px] font-bold text-slate-700">Update Dashboard</p>
-                       <p className="text-[11px] text-slate-400 mt-1">Setelah berhasil, dashboard akan otomatis terupdate dengan data terbaru.</p>
-                    </div>
-                 </div>
-               </div>
-               
-               <Button variant="link" className="w-full mt-10 text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] gap-2">
-                 Download Template <ArrowRight size={14} />
-               </Button>
-             </CardContent>
+        {/* ── Instructions Sidebar ── */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
+              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Instruksi Alur</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-8">
+              {[
+                { title: "Siapkan File", desc: "Pastikan menggunakan template resmi GRC." },
+                { title: "Validasi Skema", desc: "Sistem akan memeriksa integrasi field Mandatory." },
+                { title: "Proses Sinkron", desc: "Jangan menutup tab selama proses berlangsung." },
+              ].map((step, i) => (
+                <div key={i} className="flex gap-4 group">
+                  <span className="text-[10px] font-black text-muted-foreground/30 group-hover:text-primary transition-colors">0{i + 1}</span>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-tight leading-none">{step.title}</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed font-medium italic">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+
+              <div className="pt-6 border-t border-border">
+                <button className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-all text-left">
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Download</p>
+                    <p className="text-xs font-bold text-foreground">Excel Standard Template</p>
+                  </div>
+                  <ChevronRight className="text-muted-foreground/40" size={16} />
+                </button>
+              </div>
+            </CardContent>
           </Card>
         </div>
       </div>

@@ -1,277 +1,170 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { Plus, Search, Filter, ShieldCheck, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { COMPLIANCE_DATA, TRANSACTION_ALERTS, CUSTOMER_DATA } from "@/lib/data";
-import {
-  ShieldCheck,
-  ChevronDown,
-  Search,
-  Filter,
-  Calendar,
-  MoreVertical,
-  CheckCircle2,
-  Clock,
-  User,
-  Bell,
-  UserX,
-  AlertTriangle,
-  Layers,
-  FileText,
-  Target,
-  BarChart3,
-  ArrowRight
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import HeaderTitle from "@/components/layout/HeaderTitle";
+import { COMPLIANCE_DATA } from "@/lib/data";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
-
-interface Regulation {
-  id: string;
-  title: string;
-  regulation_type: string;
-  issued_date: string;
-  status: string;
-  category?: string;
-}
-
-const CATEGORIES = [
-  { id: 'Internal', label: 'Internal' },
-  { id: 'External', label: 'Eksternal' },
-];
-
-const PieChart = ({ pass = 0, fail = 0, na = 0 }: { pass: number, fail: number, na: number }) => {
-  const total = pass + fail + na;
-  if (total === 0) return (
-    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-[8px] text-slate-400 font-bold uppercase text-center p-2">
-      Tidak Ada Data
-    </div>
-  );
-
-  const passPct = (pass / total) * 100;
-  const failPct = (fail / total) * 100;
-
-  return (
-    <div className="relative w-16 h-16 group/chart">
-      <div
-        className="w-full h-full rounded-full shadow-inner transition-transform duration-500 group-hover/chart:scale-110"
-        style={{
-          background: `conic-gradient(
-            #2acf33ff 0% ${passPct}%, 
-            #cf0000ff ${passPct}% ${passPct + failPct}%, 
-            #fffb04ff ${passPct + failPct}% 100%
-          )`
-        }}
-      />
-      <div className="absolute inset-1.5 bg-white rounded-full flex items-center justify-center shadow-sm">
-        <span className="text-[10px] font-black text-slate-800">{Math.round(passPct)}%</span>
-      </div>
-    </div>
-  );
-};
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function CompliancePage() {
-  const [regulations, setRegulations] = useState<Regulation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('Internal');
+  const router = useRouter();
+  const [search, setSearch] = React.useState("");
+  const pageSize = 10;
 
-  useEffect(() => {
-    const fetchRegulations = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/v1/regulations`);
-        if (response.ok) {
-          const data = await response.json();
-          // Use the real assessment data from backend
-          const enrichedData = data.map((reg: any) => ({
-            ...reg,
-            amount_pass: reg.amount_pass || 0,
-            amount_fail: reg.amount_fail || 0,
-            amount_na: reg.amount_na || 0,
-            category: reg.category || 'Internal'
-          }));
-          setRegulations(enrichedData);
-        }
-      } catch (error) {
-        console.error("Error fetching regulations:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRegulations();
-  }, []);
-
-  const filteredRegulations = regulations.filter(reg =>
-    activeCategory === 'all' || reg.category?.toLowerCase() === activeCategory.toLowerCase()
+  const filteredData = COMPLIANCE_DATA.filter(item =>
+    item.name.toLowerCase().includes(search.toLowerCase()) ||
+    item.id.toLowerCase().includes(search.toLowerCase()) ||
+    item.regulation.toLowerCase().includes(search.toLowerCase())
   );
 
+  const paginatedData = filteredData.slice(0, pageSize);
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+
   return (
-    <div className="space-y-6 pb-12">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between mt-6">
-          <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
-              Kepatuhan
-            </h2>
-            <p className="text-md font-black text-slate-500 tracking-tight leading-tight">
-              Compliance Center
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+    <div className="space-y-6 animate-in fade-in duration-500 w-full px-2 pb-10">
+      <HeaderTitle title="Compliance Checklist" />
+
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex gap-2 items-center">
+          <form className="relative" onSubmit={(e) => e.preventDefault()}>
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari regulasi, ID, atau nama item kepatuhan..."
+              className="h-9 w-64 pl-9 text-sm bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all placeholder:text-slate-400"
+            />
+          </form>
+          {filteredData.length > 0 && (
+            <span className="text-xs text-slate-400 px-1 font-medium">
+              {filteredData.length} item terdaftar
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button className="h-9 px-3 bg-white border border-slate-200 text-slate-600 rounded-md text-sm font-medium hover:bg-slate-50 transition-all flex items-center gap-1.5 flex-none">
+            <Filter className="w-4 h-4" /> Filter
+          </button>
+          <Button size="sm" asChild className="h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all flex items-center gap-1.5 shadow-sm flex-none">
             <Link href="/compliance/create">
-              <Button className="h-11 px-6 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
-                Tambah Regulasi
-              </Button>
+              <Plus className="w-4 h-4" /> Checklist
             </Link>
-          </div>
+          </Button>
         </div>
       </div>
 
-      {/* ── Tabs & Filter Bar ── */}
-      <div className="space-y-4 pt-4">
-        <Tabs defaultValue="Internal" className="w-full" onValueChange={setActiveCategory}>
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
-
-            <div className="flex items-center gap-3">
-              <div className="relative w-64 max-md:flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                <Input
-                  placeholder="Cari regulasi..."
-                  className="h-10 pl-9 border-slate-200 bg-white rounded-xl text-xs focus:ring-blue-500 transition-all"
-                />
-              </div>
-
-              <Select defaultValue="all">
-                <SelectTrigger className="h-10 w-[140px] bg-white border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-50 shadow-sm transition-all">
-                  <SelectValue placeholder="Tipe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Tipe</SelectItem>
-                  <SelectItem value="pojk">POJK</SelectItem>
-                  <SelectItem value="ojk">OJK</SelectItem>
-                  <SelectItem value="bi">BI</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <TabsList className="bg-slate-50 p-1 h-12 rounded-2xl border border-slate-100">
-              {CATEGORIES.map(cat => (
-                <TabsTrigger
-                  key={cat.id}
-                  value={cat.id}
-                  className="px-6 h-10 rounded-xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
+      {/* ── Table Container ── */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="pl-6 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">ID Checklist</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Regulasi & Deskripsi</TableHead>
+              <TableHead className="py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">PIC | Kategori</TableHead>
+              <TableHead className="text-center py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Deadline</TableHead>
+              <TableHead className="text-center pr-6 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedData.length > 0 ? (
+              paginatedData.map((item) => (
+                <TableRow 
+                  key={item.id} 
+                  onClick={() => router.push(`/compliance/${item.id}`)}
+                  className="hover:bg-muted/30 transition-colors group cursor-pointer"
                 >
-                  {cat.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
-
-          {/* ── List View ── */}
-          <div className="grid grid-cols-1 gap-4 pt-6">
-            {loading ? (
-              Array(3).fill(0).map((_, i) => (
-                <div key={i} className="animate-pulse bg-slate-50 border border-slate-100 h-24 rounded-2xl" />
-              ))
-            ) : filteredRegulations.length > 0 ? (
-              filteredRegulations.map((reg: any) => (
-                <Link key={reg.id} href={`/compliance/${reg.id}`}>
-                  <Card
-                    className="group relative overflow-hidden border border-slate-100 shadow-sm bg-white rounded-2xl hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-pointer"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex flex-row items-center gap-6">
-                        {/* Pie Chart Section */}
-                        <div className="flex-shrink-0 bg-slate-50 p-2 rounded-xl">
-                          <PieChart 
-                            pass={reg.amount_pass} 
-                            fail={reg.amount_fail} 
-                            na={reg.amount_na} 
-                          />
-                        </div>
-                        
-                        {/* Main Content Area */}
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm transition-all ${
-                              reg.status === 'Active' ? 'bg-emerald-50/50 border-emerald-100' : 
-                              reg.status === 'Draft' ? 'bg-amber-50/50 border-amber-100' : 
-                              reg.status === 'Retired' ? 'bg-rose-50/50 border-rose-100' : 'bg-slate-50 border-slate-100'
-                            }`}>
-                              {reg.status === 'Active' && (
-                                <span className="relative flex h-2 w-2">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                </span>
-                              )}
-                              <span className={`text-[10px] font-black uppercase tracking-wider ${
-                                reg.status === 'Active' ? 'text-emerald-700' : 
-                                reg.status === 'Draft' ? 'text-amber-600' : 
-                                reg.status === 'Retired' ? 'text-rose-600' : 'text-slate-600'
-                              }`}>
-                                {reg.status === 'Active' ? 'Aktif' : reg.status === 'Draft' ? 'Draf' : reg.status === 'Retired' ? 'Non-Aktif' : reg.status}
-                              </span>
-                            </div>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none ml-1">
-                              {reg.regulation_type}
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                            {reg.title}
-                          </h3>
-                          <p className="text-xs text-slate-400 font-medium">
-                            Terbit: {new Date(reg.issued_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
-                          </p>
-                        </div>
-
-                        {/* Stats Summary Area */}
-                        <div className="flex flex-row gap-6 px-6 border-x border-slate-100 items-center h-12">
-                          <div className="text-center">
-                            <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Sesuai</p>
-                            <p className="text-sm font-bold text-emerald-500 leading-tight">{reg.amount_pass}</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Gagal</p>
-                            <p className="text-sm font-bold text-rose-600 leading-tight">{reg.amount_fail}</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-[8px] font-black text-yellow-400 uppercase tracking-widest">N/A</p>
-                            <p className="text-sm font-bold text-yellow-600 leading-tight">{reg.amount_na}</p>
-                          </div>
-                        </div>
-
-                        {/* Action Icon */}
-                        <div className="w-10 h-10 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-45 transition-all duration-300">
-                          <ArrowRight size={18} />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                  <TableCell className="pl-6 py-4">
+                    <span className="text-xs text-muted-foreground font-mono font-bold tracking-tight">
+                      {item.id}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors tracking-tight">
+                        {item.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground/60 font-mono font-medium mt-0.5">
+                        {item.regulation}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4 font-medium text-xs text-muted-foreground">
+                    {item.pic} <span className="mx-2 text-border">|</span> {item.category}
+                  </TableCell>
+                  <TableCell className="py-4 text-center">
+                    <span className="text-xs font-bold text-foreground bg-muted px-2 py-1 rounded border border-border">
+                      {item.deadline}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-4 text-center pr-6">
+                    <div className="inline-flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'Compliant' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' :
+                          item.status === 'In Progress' ? 'bg-amber-400' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]'
+                        }`} />
+                      <span className={`text-xs font-medium tracking-widest ${item.status === 'Compliant' ? 'text-emerald-600' :
+                          item.status === 'In Progress' ? 'text-amber-600' : 'text-rose-600'
+                        }`}>
+                        {item.status}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))
             ) : (
-              <div className="p-20 text-center bg-slate-50 border-2 border-dashed border-slate-100 rounded-3xl">
-                <p className="text-slate-400 font-bold">Tidak ada regulasi dalam kategori ini.</p>
-              </div>
+              <TableRow>
+                <TableCell colSpan={5} className="h-48 text-center bg-muted/5">
+                  <div className="flex flex-col items-center gap-3 text-muted-foreground/40">
+                    <AlertCircle size={32} strokeWidth={1} />
+                    <p className="text-xs font-medium uppercase tracking-widest">Data tidak ditemukan</p>
+                  </div>
+                </TableCell>
+              </TableRow>
             )}
-          </div>
-        </Tabs>
+          </TableBody>
+        </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <p className="text-xs text-muted-foreground">
+            Menampilkan <span className="font-semibold">1</span> sampai <span className="font-semibold">{Math.min(pageSize, filteredData.length)}</span> dari <span className="font-semibold">{filteredData.length}</span> data
+          </p>
+          <div className="flex gap-2">
+            <button
+              disabled
+              className="p-2 rounded-md border border-border bg-card transition-colors hover:bg-muted pointer-events-none opacity-50"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  className={`w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold transition-all ${
+                    p === 1 
+                      ? "bg-primary text-primary-foreground shadow-sm" 
+                      : "bg-card border border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+            <button
+              className="p-2 rounded-md border border-border bg-card transition-colors hover:bg-muted"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
