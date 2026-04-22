@@ -22,23 +22,12 @@ import { useSettings } from "@/context/SettingsContext";
 
 const menuItems = [
   {
-    title: "Utama",
     items: [
       { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard.view" },
-      { name: "Compliance", href: "/compliance", icon: ShieldCheck, permission: "compliance.view" },
       { name: "Governance", href: "/governance", icon: Warehouse, permission: "governance.view" },
-    ],
-  },
-  {
-    title: "Operasional",
-    items: [
       { name: "Risk Management", href: "/risk", icon: BarChart3, permission: "risk.view" },
+      { name: "Compliance", href: "/compliance", icon: ShieldCheck, permission: "compliance.view" },
       { name: "Policy Management", href: "/policies", icon: History, permission: "policy.view" },
-    ],
-  },
-  {
-    title: "Administrasi",
-    items: [
       { name: "Upload Snapshot", href: "/upload", icon: ArrowLeftRight, permission: "upload.view" },
       { name: "Audit Trail", href: "/audit", icon: History, permission: "audit.view" },
       { name: "Pengaturan Sistem", href: "/settings", icon: Settings, permission: "settings.view" },
@@ -96,10 +85,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 custom-scrollbar">
         {filteredMenuItems.map((group) => (
-          <div key={group.title} className="mb-6">
-            <p className="text-[11px] font-bold text-white/20 uppercase tracking-widest px-3 mb-2">
-              {group.title}
-            </p>
+          <div className="mb-6">
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const hasSubItems = !!(item as any).subItems;

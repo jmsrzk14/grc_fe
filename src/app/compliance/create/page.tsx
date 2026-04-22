@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
   Save, 
-  ShieldCheck,
-  Trash2
+  Loader2,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,11 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import HeaderTitle from "@/components/layout/HeaderTitle";
+import { useHeader } from "@/context/HeaderContext";
 
 export default function CreateCompliancePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { setTitle } = useHeader();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -33,6 +33,10 @@ export default function CreateCompliancePage() {
     issued_date: new Date().toISOString().split('T')[0],
     status: "Active"
   });
+
+  useEffect(() => {
+    setTitle("Daftar Regulasi Baru");
+  }, [setTitle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +55,7 @@ export default function CreateCompliancePage() {
       if (response.ok) {
         toast({
           title: "Berhasil!",
-          description: "Regulasi baru telah berhasil didaftarkan.",
+          description: "Regulasi baru telah didaftarkan.",
           variant: "success",
         });
         router.push("/compliance");
@@ -59,12 +63,11 @@ export default function CreateCompliancePage() {
         const errorData = await response.json();
         toast({
           title: "Gagal!",
-          description: errorData.message || "Terjadi kesalahan saat menyimpan data.",
+          description: errorData.message || "Terjadi kesalahan.",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("Submission error:", error);
       toast({
         title: "Error!",
         description: "Tidak dapat terhubung ke server.",
@@ -76,132 +79,152 @@ export default function CreateCompliancePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 w-full px-2 pb-10">
-      {/* ── Page Header ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => router.back()}
-            className="h-9 w-9 rounded-md border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            <ArrowLeft className="h-4 w-4 text-slate-500" />
-          </Button>
-          <HeaderTitle title="Daftar Regulasi Baru" />
-        </div>
-        <div className="flex items-center gap-2">
-           <Button 
-             type="button"
-             variant="outline" 
-             onClick={() => router.back()}
-             className="h-9 px-4 bg-white border border-slate-200 text-slate-600 rounded-md text-sm font-medium hover:bg-slate-50 transition-all shadow-sm"
-           >
-              <Trash2 className="h-4 w-4 mr-1.5" /> Batal
-           </Button>
-           <Button 
-             onClick={handleSubmit}
-             disabled={loading}
-             className="h-9 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-all shadow-sm"
-           >
-              <Save className="h-4 w-4 mr-1.5" /> {loading ? "Menyimpan..." : "Simpan Regulasi"}
-           </Button>
+    <div className="w-full h-full flex flex-col space-y-6 py-4 animate-in fade-in duration-500">
+      {/* ── Header ── */}
+      <div className="flex items-center gap-4 px-2">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => router.back()}
+          className="rounded-lg h-9 w-9 text-slate-400 hover:text-slate-900 border border-slate-100 bg-white"
+        >
+          <ArrowLeft size={16} />
+        </Button>
+        <div>
+          <h1 className="text-xl font-bold text-slate-800 tracking-tight leading-none">
+            Tambah Regulasi Baru
+          </h1>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+            Manual Registration
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* ── Utama: Formulir ── */}
-        <div className="lg:col-span-8 space-y-6">
-          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
-            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
-              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Informasi Utama Regulasi</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-               <div className="grid gap-2">
-                 <Label htmlFor="title" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Judul Lengkap Regulasi</Label>
-                 <Input 
-                   id="title" 
-                   value={formData.title}
-                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                   placeholder="Masukkan nama resmi regulasi atau undang-undang..." 
-                   className="h-10 border-slate-200 rounded-md bg-slate-50/30 focus:bg-white focus:ring-1 focus:ring-primary/20 transition-all font-medium" 
-                 />
-               </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Card className="border border-slate-100 shadow-sm rounded-xl overflow-hidden bg-slate-50/50">
+          <CardContent className="p-6 space-y-6">
+            {/* Title */}
+            <div className="space-y-1.5">
+              <Label htmlFor="title" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">
+                Judul Regulasi
+              </Label>
+              <Input 
+                id="title"
+                required
+                placeholder="Masukkan judul regulasi..."
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                className="h-11 border-slate-200 bg-white rounded-lg focus:ring-1 focus:ring-blue-500 transition-all text-sm font-medium"
+              />
+            </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="type" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipe Dokumen</Label>
-                    <Select 
-                      value={formData.regulation_type} 
-                      onValueChange={(val) => setFormData({...formData, regulation_type: val})}
-                    >
-                      <SelectTrigger className="h-10 border-slate-200 rounded-md bg-slate-50/30">
-                        <SelectValue placeholder="Pilih Tipe" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="POJK">POJK (OJK)</SelectItem>
-                        <SelectItem value="BI">BI (Bank Indonesia)</SelectItem>
-                        <SelectItem value="UU">Undang-Undang</SelectItem>
-                        <SelectItem value="PERPRES">Perpres</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="date" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Tanggal Penetapan</Label>
-                    <Input 
-                      id="date" 
-                      type="date" 
-                      value={formData.issued_date}
-                      onChange={(e) => setFormData({...formData, issued_date: e.target.value})}
-                      className="h-10 border-slate-200 bg-slate-50/30 rounded-md" 
-                    />
-                  </div>
-               </div>
-            </CardContent>
-          </Card>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Type */}
+              <div className="md:col-span-1 space-y-1.5">
+                <Label htmlFor="type" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">
+                  Tipe
+                </Label>
+                <Select 
+                  value={formData.regulation_type} 
+                  onValueChange={(val) => setFormData({...formData, regulation_type: val})}
+                >
+                  <SelectTrigger className="h-11 border-slate-200 bg-white rounded-lg font-medium text-sm">
+                    <SelectValue placeholder="Tipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="POJK">POJK</SelectItem>
+                    <SelectItem value="OJK">OJK (SE)</SelectItem>
+                    <SelectItem value="BI">BI</SelectItem>
+                    <SelectItem value="UU">Undang-Undang</SelectItem>
+                    <SelectItem value="INTERNAL">Internal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
-            <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
-              <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Kategorisasi & Lingkup</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-               <div className="grid gap-2">
-                 <Label htmlFor="category" className="text-xs font-bold text-slate-500 uppercase tracking-wide">Kategori Kepatuhan</Label>
-                 <Select 
-                   value={formData.category} 
-                   onValueChange={(val) => setFormData({...formData, category: val})}
-                 >
-                    <SelectTrigger className="h-10 border-slate-200 rounded-md bg-slate-50/30">
-                       <SelectValue placeholder="Pilih Cakupan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Internal">Internal Perusahaan</SelectItem>
-                      <SelectItem value="External">Eksternal / Industri</SelectItem>
-                      <SelectItem value="Subsidiary">Anak Perusahaan</SelectItem>
-                    </SelectContent>
-                 </Select>
-               </div>
-            </CardContent>
-          </Card>
-        </div>
+              {/* Date */}
+              <div className="md:col-span-1 space-y-1.5">
+                <Label htmlFor="date" className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">
+                  Tanggal Terbit
+                </Label>
+                <Input 
+                  id="date"
+                  type="date"
+                  required
+                  value={formData.issued_date}
+                  onChange={(e) => setFormData({...formData, issued_date: e.target.value})}
+                  className="h-11 border-slate-200 bg-white rounded-lg font-medium text-sm"
+                />
+              </div>
 
-        {/* ── Samping: Status ── */}
-        <div className="lg:col-span-4">
-           <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden sticky top-24">
-             <CardHeader className="bg-muted/20 border-b border-border px-6 py-4">
-                <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Catatan Sistem</CardTitle>
-             </CardHeader>
-             <CardContent className="p-6 space-y-6">
-                <div className="p-4 bg-muted/30 rounded-lg border border-border flex items-start gap-3">
-                   <ShieldCheck className="mt-0.5 text-blue-500 shrink-0" size={16} />
-                   <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                      Setiap regulasi yang didaftarkan akan secara otomatis memicu notifikasi kepada unit kerja terkait untuk penilaian kepatuhan.
-                   </p>
+              {/* Category */}
+              <div className="md:col-span-1 space-y-1.5">
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">
+                  Kategori
+                </Label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(val) => setFormData({...formData, category: val})}
+                >
+                  <SelectTrigger className="h-11 border-slate-200 bg-white rounded-lg font-medium text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Internal">Internal</SelectItem>
+                    <SelectItem value="External">Eksternal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status */}
+              <div className="md:col-span-1 space-y-1.5">
+                <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-0.5">
+                  Status
+                </Label>
+                <div className="flex p-0.5 bg-slate-200/50 rounded-lg gap-0.5 border border-slate-100 h-11">
+                   <button
+                     type="button"
+                     onClick={() => setFormData({...formData, status: "Active"})}
+                     className={`flex-1 rounded-md text-[10px] font-black uppercase transition-all ${
+                       formData.status === 'Active' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600 font-bold'
+                     }`}
+                   >
+                     Aktif
+                   </button>
+                   <button
+                     type="button"
+                     onClick={() => setFormData({...formData, status: "Draft"})}
+                     className={`flex-1 rounded-md text-[10px] font-black uppercase transition-all ${
+                       formData.status === 'Draft' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600 font-bold'
+                     }`}
+                   >
+                     Draf
+                   </button>
                 </div>
-             </CardContent>
-           </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Buttons */}
+        <div className="flex items-center justify-end gap-2 px-2">
+          <Button 
+            variant="ghost"
+            type="button"
+            onClick={() => router.back()}
+            className="h-10 px-6 font-bold text-slate-400 hover:text-slate-900 text-xs uppercase tracking-widest"
+          >
+            Batal
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={loading}
+            className="h-10 px-8 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-lg shadow-sm transition-all active:scale-95 gap-2 text-xs uppercase tracking-[0.15em]"
+          >
+            {loading ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <Save size={14} />}
+            Simpan Regulasi
+          </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
