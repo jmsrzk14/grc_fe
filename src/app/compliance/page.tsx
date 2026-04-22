@@ -83,7 +83,7 @@ const PieChart = ({ pass = 0, fail = 0, na = 0 }: { pass: number, fail: number, 
         }}
       />
       <div className="absolute inset-1.5 bg-white rounded-full flex items-center justify-center shadow-sm">
-        <span className="text-[10px] font-black text-slate-800">{Math.round(passPct)}%</span>
+        <span className="text-[10px] font-bold text-slate-800">{Math.round(passPct)}%</span>
       </div>
     </div>
   );
@@ -135,10 +135,10 @@ export default function CompliancePage() {
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between mt-6">
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight leading-tight">
               Kepatuhan
             </h2>
-            <p className="text-md font-black text-slate-500 tracking-tight leading-tight">
+            <p className="text-md font-bold text-slate-500 tracking-tight leading-tight">
               Compliance Center
             </p>
           </div>
@@ -164,17 +164,6 @@ export default function CompliancePage() {
                   className="h-10 pl-9 border-slate-200 bg-white rounded-xl text-xs focus:ring-blue-500 transition-all"
                 />
               </div>
-              <Select defaultValue="all">
-                <SelectTrigger className="h-10 w-[140px] bg-white border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-50 shadow-sm transition-all">
-                  <SelectValue placeholder="Tipe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Tipe</SelectItem>
-                  <SelectItem value="pojk">POJK</SelectItem>
-                  <SelectItem value="ojk">OJK</SelectItem>
-                  <SelectItem value="bi">BI</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <TabsList className="bg-slate-50 p-1 h-12 rounded-2xl border border-slate-100">
               {CATEGORIES.map(cat => (
@@ -220,7 +209,7 @@ export default function CompliancePage() {
                                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                                 </span>
                               )}
-                              <span className={`text-[10px] font-black uppercase tracking-wider ${
+                              <span className={`text-[10px] font-bold uppercase tracking-wider ${
                                 reg.status === 'Active' ? 'text-emerald-700' : 
                                 reg.status === 'Draft' ? 'text-amber-600' : 
                                 reg.status === 'Retired' ? 'text-rose-600' : 'text-slate-600'
@@ -241,15 +230,15 @@ export default function CompliancePage() {
                         </div>
                         <div className="flex flex-row gap-6 px-6 border-x border-slate-100 items-center h-12">
                           <div className="text-center">
-                            <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Memenuhi</p>
+                            <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest">Memenuhi</p>
                             <p className="text-sm font-bold text-emerald-500 leading-tight">{reg.amount_pass}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Tidak</p>
+                            <p className="text-[8px] font-bold text-rose-400 uppercase tracking-widest">Tidak</p>
                             <p className="text-sm font-bold text-rose-600 leading-tight">{reg.amount_fail}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-[8px] font-black text-yellow-400 uppercase tracking-widest">N/A</p>
+                            <p className="text-[8px] font-bold text-yellow-400 uppercase tracking-widest">N/A</p>
                             <p className="text-sm font-bold text-yellow-600 leading-tight">{reg.amount_na}</p>
                           </div>
                         </div>

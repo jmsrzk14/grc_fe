@@ -20,6 +20,7 @@ interface RegulationItem {
   id: string;
   reference_number: string;
   content: string;
+  tenant_properti_id: string | null;
 }
 
 interface AssessmentResult {
@@ -49,6 +50,8 @@ export default function AssessmentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [tenantProperties, setTenantProperties] = useState<any[]>([]);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -77,7 +80,15 @@ export default function AssessmentPage() {
         }
 
         if (currentTenantId) {
-          const sessionsRes = await fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${currentTenantId}`);
+          const [sessionsRes, tpRes, pRes] = await Promise.all([
+            fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${currentTenantId}`),
+            fetch(`${apiUrl}/api/v1/tenants/${currentTenantId}/properties`),
+            fetch(`${apiUrl}/api/v1/properties`)
+          ]);
+
+          if (tpRes.ok) setTenantProperties(await tpRes.json());
+          if (pRes.ok) setProperties(await pRes.json());
+
           if (sessionsRes.ok) {
             const sessions = await sessionsRes.json();
             if (sessions.length > 0) {
@@ -194,7 +205,7 @@ export default function AssessmentPage() {
           </Link>
           <div>
             <h1 className="text-xl font-bold text-slate-800 tracking-tight leading-none">Self Assessment</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Evaluation Board</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Evaluation Board</p>
           </div>
         </div>
       </div>
@@ -212,9 +223,18 @@ export default function AssessmentPage() {
                   <div className="p-6 bg-slate-50/50 border-r border-slate-100 flex flex-col gap-4">
                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                           <Badge variant="outline" className="bg-white text-[10px] font-black border-slate-200 text-slate-500 rounded-md py-0 h-5">
+                           <Badge variant="outline" className="bg-white text-[10px] font-bold border-slate-200 text-slate-500 rounded-md py-0 h-5">
                               {item.reference_number}
                            </Badge>
+                           {item.tenant_properti_id && (
+                             <Badge className="bg-blue-500 text-white text-[9px] font-bold border-none rounded-md py-0 h-5">
+                               {(() => {
+                                 const tp = tenantProperties.find(t => t.id === item.tenant_properti_id);
+                                 const p = tp ? properties.find(prop => prop.id === tp.property_id) : null;
+                                 return p ? p.Name : "Properti";
+                               })()}
+                             </Badge>
+                           )}
                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ketentuan / Pasal</span>
                         </div>
                      </div>
@@ -235,7 +255,7 @@ export default function AssessmentPage() {
                   >
                      {isSaving && (
                         <div className="absolute top-4 right-4 flex items-center gap-2">
-                           <span className="text-[8px] font-black text-blue-500 uppercase tracking-[0.2em] animate-pulse">Autosaving...</span>
+                           <span className="text-[8px] font-bold text-blue-500 uppercase tracking-[0.2em] animate-pulse">Autosaving...</span>
                            <Loader2 size={10} className="animate-spin text-blue-500" />
                         </div>
                      )}
@@ -252,7 +272,7 @@ export default function AssessmentPage() {
                               key={opt.val}
                               onClick={() => handleSaveResult(item.id, opt.val)}
                               disabled={isSaving}
-                              className={`flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                              className={`flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all border ${
                                 res.compliance_status === opt.val 
                                 ? `${opt.color} text-white border-transparent shadow-lg shadow-${opt.color.split('-')[1]}-100` 
                                 : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'
@@ -267,7 +287,7 @@ export default function AssessmentPage() {
 
                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Keterangan / Temuan</h4>
+                           <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Keterangan / Temuan</h4>
                         </div>
                         <textarea
                           placeholder="Tambahkan catatan atau bukti pendukung di sini..."

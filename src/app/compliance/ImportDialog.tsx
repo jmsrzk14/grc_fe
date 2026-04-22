@@ -11,7 +11,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
 
@@ -25,6 +25,36 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
+  const [tenantProperties, setTenantProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const loadMappingData = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const tenantsRes = await fetch(`${apiUrl}/api/v1/tenants`);
+        if (tenantsRes.ok) {
+          const tenants = await tenantsRes.json();
+          if (tenants.length > 0) {
+            const tId = tenants[0].id;
+            setTenantId(tId);
+            
+            const [tpRes, pRes] = await Promise.all([
+              fetch(`${apiUrl}/api/v1/tenants/${tId}/properties`),
+              fetch(`${apiUrl}/api/v1/properties`)
+            ]);
+            
+            if (tpRes.ok) setTenantProperties(await tpRes.json());
+            if (pRes.ok) setProperties(await pRes.json());
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load mapping data:", err);
+      }
+    };
+    loadMappingData();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -103,11 +133,22 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
 
             const itemRef = row.ItemRef || row.Ref || row.reference_number;
             const itemContent = row.ItemContent || row.Content || row.content;
+            const propName = row.TenantProperty || row.Property || row.tenant_properti;
+
+            let tenantPropId = null;
+            if (propName) {
+              const prop = properties.find(p => p.Name.toLowerCase() === String(propName).toLowerCase());
+              if (prop) {
+                const mapping = tenantProperties.find(tp => tp.property_id === prop.id);
+                if (mapping) tenantPropId = mapping.id;
+              }
+            }
 
             if (itemRef && itemContent) {
               regulationsMap.get(title).items.push({
                 reference_number: String(itemRef),
-                content: String(itemContent)
+                content: String(itemContent),
+                tenant_properti_id: tenantPropId
               });
             }
           });
@@ -184,6 +225,10 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
     }
   };
 
+  const downloadTemplate = () => {
+    window.open("/templates/Template_Import_Regulasi.xlsx", "_blank");
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -198,14 +243,22 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm">
               <Upload size={24} />
             </div>
-            <div>
+            <div className="flex-1">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
-                  Import Data Regulasi
-                </DialogTitle>
-                <DialogDescription className="text-sm font-medium text-slate-500 mt-1">
-                  Unggah file CSV atau Excel untuk menambahkan data massal.
-                </DialogDescription>
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">
+                    Import Data Regulasi
+                  </DialogTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={downloadTemplate}
+                    className="h-8 px-3 text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:bg-blue-50 bg-blue-50/50 rounded-lg gap-1.5"
+                  >
+                    <Download size={12} />
+                    Template
+                  </Button>
+                </div>
               </DialogHeader>
             </div>
           </div>
@@ -230,7 +283,7 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
                     <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText size={32} />
                     </div>
-                    <p className="text-sm font-black text-slate-700">{file.name}</p>
+                    <p className="text-sm font-bold text-slate-700">{file.name}</p>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Klik untuk mengganti file</p>
                   </div>
                 ) : (
@@ -240,7 +293,6 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-600">Pilih file CSV atau Excel</p>
-                      <p className="text-xs text-slate-400 mt-1">Struktur: Title, Type, Date, Status, Category, ItemRef, ItemContent</p>
                     </div>
                   </div>
                 )}
@@ -255,7 +307,7 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
             )}
             
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+               <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <AlertCircle size={12} />
                   Panduan Format
                </h4>
@@ -277,17 +329,17 @@ export default function ImportDialog({ onSuccess }: ImportDialogProps) {
               variant="ghost" 
               onClick={() => setOpen(false)}
               disabled={loading}
-              className="h-12 px-6 font-black text-[11px] text-slate-400 uppercase tracking-widest hover:bg-slate-50 rounded-xl"
+              className="h-12 px-6 font-bold text-[11px] text-slate-400 uppercase tracking-widest hover:bg-slate-50 rounded-xl"
             >
               Batal
             </Button>
             <Button 
               onClick={handleImport}
               disabled={!file || loading}
-              className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-black text-[11px] uppercase tracking-widest px-10 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 gap-2"
+              className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase tracking-widest px-10 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 gap-2"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-              Mulai Import
+              Import
             </Button>
           </div>
         </div>
