@@ -39,7 +39,8 @@ import {
   TabsList,
   TabsTrigger
 } from "@/components/ui/tabs";
-import ImportDialog from "./ImportDialog";
+import ImportRegulationModal from "@/components/compliance/modals/ImportRegulationModal";
+import PieChart from "@/components/compliance/shared/PieChart";
 import { useHeader } from "@/context/HeaderContext";
 
 interface Regulation {
@@ -59,35 +60,7 @@ const CATEGORIES = [
   { id: 'External', label: 'Eksternal' },
 ];
 
-const PieChart = ({ pass = 0, fail = 0, na = 0 }: { pass: number, fail: number, na: number }) => {
-  const total = pass + fail + na;
-  if (total === 0) return (
-    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-[8px] text-slate-400 font-bold uppercase text-center p-2">
-      Tidak Ada Data
-    </div>
-  );
 
-  const passPct = (pass / total) * 100;
-  const failPct = (fail / total) * 100;
-
-  return (
-    <div className="relative w-16 h-16 group/chart">
-      <div
-        className="w-full h-full rounded-full shadow-inner transition-transform duration-500 group-hover/chart:scale-110"
-        style={{
-          background: `conic-gradient(
-            #2acf33ff 0% ${passPct}%, 
-            #cf0000ff ${passPct}% ${passPct + failPct}%, 
-            #fffb04ff ${passPct + failPct}% 100%
-          )`
-        }}
-      />
-      <div className="absolute inset-1.5 bg-white rounded-full flex items-center justify-center shadow-sm">
-        <span className="text-[10px] font-bold text-slate-800">{Math.round(passPct)}%</span>
-      </div>
-    </div>
-  );
-};
 
 export default function CompliancePage() {
   const { setTitle } = useHeader();
@@ -96,7 +69,7 @@ export default function CompliancePage() {
   const [activeCategory, setActiveCategory] = useState('Internal');
 
   useEffect(() => {
-    setTitle("Compliance Center");
+    setTitle("Kepatuhan");
   }, [setTitle]);
 
   useEffect(() => {
@@ -143,7 +116,7 @@ export default function CompliancePage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <ImportDialog onSuccess={() => window.location.reload()} />
+            <ImportRegulationModal onSuccess={() => window.location.reload()} />
             <Link href="/compliance/create">
               <Button className="h-11 px-6 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
                 Tambah Regulasi

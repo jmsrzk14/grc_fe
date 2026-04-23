@@ -24,12 +24,11 @@ const menuItems = [
   {
     items: [
       { name: "Dashboard", href: "/", icon: LayoutDashboard, permission: "dashboard.view" },
-      { name: "Governance", href: "/governance", icon: Warehouse, permission: "governance.view" },
-      { name: "Risk Management", href: "/risk", icon: BarChart3, permission: "risk.view" },
-      { name: "Compliance", href: "/compliance", icon: ShieldCheck, permission: "compliance.view" },
-      { name: "Policy Management", href: "/policies", icon: History, permission: "policy.view" },
-      { name: "Upload Snapshot", href: "/upload", icon: ArrowLeftRight, permission: "upload.view" },
-      { name: "Audit Trail", href: "/audit", icon: History, permission: "audit.view" },
+      { name: "Tata Kelola", href: "/governance", icon: Warehouse, permission: "governance.view" },
+      { name: "Manajemen Risiko", href: "/risk", icon: BarChart3, permission: "risk.view" },
+      { name: "Kepatuhan", href: "/compliance", icon: ShieldCheck, permission: "compliance.view" },
+      { name: "Manajemen Kebijakan", href: "/policies", icon: History, permission: "policy.view" },
+      { name: "Jejak Audit", href: "/audit", icon: History, permission: "audit.view" },
       { name: "Pengaturan Sistem", href: "/settings", icon: Settings, permission: "settings.view" },
     ],
   },

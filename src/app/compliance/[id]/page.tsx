@@ -3,38 +3,21 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { 
-  ShieldCheck, 
+import {
+  ShieldCheck,
   ArrowLeft,
   CheckCircle2,
   FileText,
   Plus,
-  Save,
-  Loader2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  DialogTrigger 
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useHeader } from "@/context/HeaderContext";
+import AddItemModal from "@/components/compliance/modals/AddItemModal";
+import PieChart from "@/components/compliance/shared/PieChart";
+
 
 interface Regulation {
   id: string;
@@ -54,41 +37,13 @@ interface RegulationItem {
   tenant_properti_id: string | null;
 }
 
-const PieChart = ({ pass = 0, fail = 0, na = 0 }: { pass: number, fail: number, na: number }) => {
-  const total = pass + fail + na;
-  const scoreBase = pass + fail;
-  
-  if (total === 0) return (
-    <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase text-center p-3">
-      No Data
-    </div>
-  );
+interface AssessmentResult {
+  id: string;
+  regulation_item_id: string;
+  compliance_status: string;
+  remarks: string;
+}
 
-  const passPct = (pass / total) * 100;
-  const failPct = (fail / total) * 100;
-  // Formula: Pass / (Pass + Fail)
-  const displayPct = scoreBase > 0 ? (pass / scoreBase) * 100 : 0;
-
-  return (
-    <div className="relative w-16 h-16 group/chart">
-      <div
-        className="w-full h-full rounded-full shadow-inner transition-transform duration-500 group-hover/chart:scale-110"
-        style={{
-          background: `conic-gradient(
-            #2acf33ff 0% ${passPct}%, 
-            #cf0000ff ${passPct}% ${passPct + failPct}%, 
-            #fffb04ff ${passPct + failPct}% 100%
-          )`
-        }}
-      />
-      <div className="absolute inset-2.5 bg-white rounded-full flex items-center justify-center shadow-sm">
-        <div className="text-center">
-           <p className="text-[12px] font-bold text-slate-800 leading-none">{Math.round(displayPct)}%</p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function RegulationDetailPage() {
   const params = useParams();
@@ -98,6 +53,7 @@ export default function RegulationDetailPage() {
 
   const [regulation, setRegulation] = useState<Regulation | null>(null);
   const [items, setItems] = useState<RegulationItem[]>([]);
+  const [results, setResults] = useState<Record<string, AssessmentResult>>({});
   const [loading, setLoading] = useState(true);
   
   // Modal State
@@ -137,12 +93,30 @@ export default function RegulationDetailPage() {
         if (tenants.length > 0) {
           const tId = tenants[0].id;
           setTenantId(tId);
-          const [tpRes, pRes] = await Promise.all([
+          const [tpRes, pRes, sessionsRes] = await Promise.all([
              fetch(`${apiUrl}/api/v1/tenants/${tId}/properties`),
-             fetch(`${apiUrl}/api/v1/properties`)
+             fetch(`${apiUrl}/api/v1/properties`),
+             fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${tId}`)
           ]);
           if (tpRes.ok) setTenantProperties(await tpRes.json());
           if (pRes.ok) setProperties(await pRes.json());
+          
+          if (sessionsRes.ok) {
+            const sessions = await sessionsRes.json();
+            if (sessions.length > 0) {
+              // Get results from the most recent session
+              const activeSession = sessions[0];
+              const resultsRes = await fetch(`${apiUrl}/api/v1/assessments/sessions/${activeSession.id}/results`);
+              if (resultsRes.ok) {
+                const resultsData = await resultsRes.json();
+                const resultsMap: Record<string, AssessmentResult> = {};
+                resultsData.forEach((res: any) => { 
+                  resultsMap[res.regulation_item_id] = res; 
+                });
+                setResults(resultsMap);
+              }
+            }
+          }
         }
       }
     } catch (error) {
@@ -169,7 +143,10 @@ export default function RegulationDetailPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newItem),
+        body: JSON.stringify({
+          ...newItem,
+          tenant_properti_id: newItem.tenant_properti_id === "none" ? "" : newItem.tenant_properti_id
+        }),
       });
 
       if (response.ok) {
@@ -238,99 +215,14 @@ export default function RegulationDetailPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="h-10 px-6 border-slate-200 text-slate-700 font-bold text-xs uppercase tracking-widest rounded-xl transition-all active:scale-95 gap-2">
-                <Plus size={16} />
-                Tambah Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[24px] p-0 overflow-hidden bg-white">
-               <div className="p-8">
-                 <div className="flex items-center gap-4 mb-2">
-                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-                       <FileText size={24} />
-                    </div>
-                    <div>
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight leading-none">
-                          Tambah Item Baru
-                        </DialogTitle>
-                        <p className="text-sm font-medium text-slate-400 mt-1">Masukkan detail kewajiban regulasi untuk indeksasi.</p>
-                      </DialogHeader>
-                    </div>
-                 </div>
-
-                 <form onSubmit={handleCreateItem} className="mt-8">
-                   <div className="space-y-6">
-                     <div className="grid gap-2">
-                        <Label htmlFor="ref" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">Nomor Referensi</Label>
-                        <Input 
-                          id="ref" 
-                          required
-                          placeholder="Misal: Pasal 1 Ayat 1" 
-                          value={newItem.reference_number}
-                          onChange={(e) => setNewItem({...newItem, reference_number: e.target.value})}
-                          className="h-12 border-slate-100 bg-slate-50/50 rounded-xl focus:border-blue-200 focus:bg-white transition-all shadow-sm text-sm font-bold"
-                        />
-                     </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="content" className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">Isi Item</Label>
-                        <Textarea 
-                          id="content" 
-                          required
-                          placeholder="Tempel teks regulasi di sini..." 
-                          value={newItem.content}
-                          onChange={(e) => setNewItem({...newItem, content: e.target.value})}
-                          className="min-h-[140px] border-slate-100 bg-slate-50/50 rounded-xl focus:border-blue-200 focus:bg-white transition-all shadow-sm text-sm font-medium leading-relaxed resize-none"
-                        />
-                     </div>
-
-                     <div className="grid gap-2">
-                        <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">Target Properti (Opsional)</Label>
-                        <Select 
-                          value={newItem.tenant_properti_id} 
-                          onValueChange={(val) => setNewItem({...newItem, tenant_properti_id: val})}
-                        >
-                          <SelectTrigger className="h-12 border-slate-100 bg-slate-50/50 rounded-xl focus:ring-blue-200 transition-all font-bold text-sm">
-                            <SelectValue placeholder="Pilih Properti" />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-100 shadow-xl font-bold">
-                            <SelectItem value="">Tanpa Properti</SelectItem>
-                            {tenantProperties.map((tp) => {
-                              const p = properties.find(prop => prop.id === tp.property_id);
-                              return (
-                                <SelectItem key={tp.id} value={tp.id}>
-                                  {p ? p.Name : `Property ${tp.id.substring(0, 5)}`}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                     </div>
-                   </div>
-                   
-                   <div className="flex justify-end gap-3 mt-10">
-                     <Button 
-                      type="button" 
-                      variant="ghost" 
-                      onClick={() => setIsModalOpen(false)}
-                      className="h-12 px-6 font-bold text-[11px] text-slate-400 uppercase tracking-widest hover:bg-slate-50 rounded-xl"
-                     >
-                       Batal
-                     </Button>
-                     <Button 
-                      type="submit" 
-                      disabled={submitting}
-                      className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase tracking-widest px-10 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
-                     >
-                       {submitting ? <Loader2 className="animate-spin h-4 w-4" /> : "Konfirmasi Simpan"}
-                     </Button>
-                   </div>
-                 </form>
-               </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            variant="outline"
+            className="h-10 px-6 border-slate-200 text-slate-700 font-bold text-xs uppercase tracking-widest rounded-xl transition-all active:scale-95 gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus size={16} />
+            Tambah Item
+          </Button>
 
           <Link href={`/compliance/${id}/assessment`}>
             <Button className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 gap-2">
@@ -340,6 +232,18 @@ export default function RegulationDetailPage() {
           </Link>
         </div>
       </div>
+
+      {/* Modal Tambah Item - dirender sebagai komponen terpisah */}
+      <AddItemModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        formData={newItem}
+        onFormChange={setNewItem}
+        onSubmit={handleCreateItem}
+        submitting={submitting}
+        tenantProperties={tenantProperties}
+        properties={properties}
+      />
 
       <div className="animate-in slide-in-from-bottom-4 fade-in duration-500">
         <h2 className="text-4xl font-bold text-slate-900 tracking-tight leading-tight mb-2">
@@ -437,7 +341,7 @@ export default function RegulationDetailPage() {
               <Card key={item.id} className="group border border-slate-100 bg-white rounded-[24px] hover:border-blue-200 hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full">
                 <CardContent className="p-6 flex-1 relative">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-3">
+                    <div className="flex w-full justify-between items-center gap-3">
                       <div className="text-xs font-bold text-slate-500 flex items-center justify-center uppercase tracking-widest">
                         {item.reference_number}
                       </div>
@@ -459,6 +363,35 @@ export default function RegulationDetailPage() {
                     </h3>
                   </div>
                 </CardContent>
+
+                {/* Status & Remarks Footer */}
+                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    {results[item.id] ? (
+                      <Badge className={`${
+                        results[item.id].compliance_status === 'YES' ? 'text-[12px] bg-emerald-50 text-emerald-600' : 
+                        results[item.id].compliance_status === 'NO' ? 'text-[12px] bg-rose-50 text-rose-600' : 
+                        'text-[12px] bg-yellow-50 text-yellow-600'
+                      } border-none font-black`}>
+                        {results[item.id].compliance_status === 'YES' ? 'Memenuhi' : 
+                         results[item.id].compliance_status === 'NO' ? 'Tidak' : 'N/A'}
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-slate-50 text-slate-400 border-none text-[9px] font-black rounded-lg">
+                        Belum Dinilai
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {results[item.id]?.remarks && (
+                    <div className="ml-2">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Catatan / Temuan</p>
+                      <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
+                        "{results[item.id].remarks}"
+                      </p>
+                    </div>
+                  )}
+                </div>
               </Card>
             ))
           ) : (
