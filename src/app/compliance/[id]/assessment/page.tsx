@@ -20,7 +20,7 @@ interface RegulationItem {
   id: string;
   reference_number: string;
   content: string;
-  tenant_properti_id: string | null;
+  tenant_properti_ids: string[];
 }
 
 interface AssessmentResult {
@@ -160,6 +160,7 @@ export default function AssessmentPage() {
           remarks: finalRemarks
         })
       });
+
       if (res.ok) {
         const savedData = await res.json();
         setResults(prev => ({ ...prev, [itemId]: savedData }));
@@ -226,14 +227,18 @@ export default function AssessmentPage() {
                       <Badge variant="outline" className="bg-white text-[10px] font-bold border-slate-200 text-slate-500 rounded-md py-0 h-5">
                         {item.reference_number}
                       </Badge>
-                      {item.tenant_properti_id && (
-                        <Badge className="bg-blue-500 text-white text-[9px] font-bold border-none rounded-md py-0 h-5">
-                          {(() => {
-                            const tp = tenantProperties.find(t => t.id === item.tenant_properti_id);
+                      {item.tenant_properti_ids && item.tenant_properti_ids.length > 0 && (
+                        <div className="flex gap-1.5 flex-wrap">
+                          {item.tenant_properti_ids.map(tpId => {
+                            const tp = tenantProperties.find(t => t.id === tpId);
                             const p = tp ? properties.find(prop => prop.id === tp.property_id) : null;
-                            return p ? p.Name : "Properti";
-                          })()}
-                        </Badge>
+                            return (
+                              <Badge key={tpId} className="bg-blue-500 text-white text-[9px] font-bold border-none rounded-md py-0 h-5">
+                                {p ? (p.name || p.Name) : "Properti"}
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       )}
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ketentuan / Pasal</span>
                     </div>
@@ -266,15 +271,14 @@ export default function AssessmentPage() {
                       {[
                         { val: 'YES', label: 'Memenuhi', color: 'bg-emerald-600', icon: CheckCircle2 },
                         { val: 'NO', label: 'Tidak', color: 'bg-rose-600', icon: XCircle },
-                        { val: 'N/A', label: 'N/A', color: 'bg-yellow-400', icon: AlertCircle }
                       ].map(opt => (
                         <button
                           key={opt.val}
                           onClick={() => handleSaveResult(item.id, opt.val)}
                           disabled={isSaving}
                           className={`flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all border ${res.compliance_status === opt.val
-                              ? `${opt.color} text-white border-transparent shadow-lg shadow-${opt.color.split('-')[1]}-100`
-                              : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'
+                            ? `${opt.color} text-white border-transparent shadow-lg shadow-${opt.color.split('-')[1]}-100`
+                            : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'
                             }`}
                         >
                           <opt.icon size={12} />

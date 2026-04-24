@@ -9,8 +9,8 @@ export default function PieChart({ pass = 0, fail = 0, na = 0, size = "sm" }: Pi
   const total = pass + fail + na;
   const scoreBase = pass + fail;
 
-  const sizeClass = size === "md" ? "w-20 h-20" : "w-16 h-16";
-  const innerInset = size === "md" ? "inset-2.5" : "inset-1.5";
+  const sizeClass = size === "md" ? "w-20 h-20" : "w-20 h-20";
+  const innerInset = size === "md" ? "inset-2.5" : "inset-3";
   const emptyTextSize = size === "md" ? "text-[10px] p-3" : "text-[8px] p-2";
 
   if (total === 0) {
@@ -42,8 +42,8 @@ export default function PieChart({ pass = 0, fail = 0, na = 0, size = "sm" }: Pi
       <div
         className={`absolute ${innerInset} bg-white rounded-full flex items-center justify-center shadow-sm`}
       >
-        <span className="text-[10px] font-bold text-slate-800">
-          {Math.round(size === "md" ? displayPct : passPct)}%
+        <span className="text-[12px] font-bold text-slate-800">
+          {Math.round(displayPct)}%
         </span>
       </div>
     </div>

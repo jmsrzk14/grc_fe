@@ -75,7 +75,7 @@ export default function CompliancePage() {
   useEffect(() => {
     const fetchRegulations = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7000";
         const response = await fetch(`${apiUrl}/api/v1/regulations`);
         if (response.ok) {
           const data = await response.json();

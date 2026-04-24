@@ -29,7 +29,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header className="h-14 bg-card border-b border-border flex items-center justify-between px-6 shrink-0 sticky top-0 z-30">
       {/* Left */}
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <button
           onClick={onMenuClick}
           className="lg:hidden p-2 hover:bg-accent rounded-md transition-colors"
@@ -39,12 +39,12 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <h1 className="text-sm font-bold text-foreground tracking-tight ">
           {title === "Dashboard" ? (settings?.webNama || "Dashboard") : title}
         </h1>
-      </div>
+      </div> */}
 
       {/* Right */}
       <div className="flex items-center gap-2">
         {/* User */}
-        <div className="relative">
+        {/* <div className="relative">
            <button
             onClick={() => setShowProfile(!showProfile)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-accent transition-colors cursor-pointer border border-transparent hover:border-border"
@@ -78,16 +78,16 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
                 <div className="p-1.5 border-t border-border">
                   <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    onClick={() => signOut({ callbackUrl: "/auth/login" })}
                     className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors text-left"
                   >
-                    <LogOut className="w-3.5 h-3.5" /> Keluar
+                    <LogOut className="w-3.5 h-3.5" /> Log Out
                   </button>
                 </div>
               </div>
             </>
           )}
-        </div>
+        </div> */}
       </div>
     </header>
   );

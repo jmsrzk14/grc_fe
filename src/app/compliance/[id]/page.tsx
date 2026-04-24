@@ -34,7 +34,7 @@ interface RegulationItem {
   id: string;
   reference_number: string;
   content: string;
-  tenant_properti_id: string | null;
+  tenant_properti_ids: string[];
 }
 
 interface AssessmentResult {
@@ -62,7 +62,7 @@ export default function RegulationDetailPage() {
   const [newItem, setNewItem] = useState({
     reference_number: "",
     content: "",
-    tenant_properti_id: ""
+    tenant_properti_ids: [] as string[]
   });
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -145,7 +145,7 @@ export default function RegulationDetailPage() {
         },
         body: JSON.stringify({
           ...newItem,
-          tenant_properti_id: newItem.tenant_properti_id === "none" ? "" : newItem.tenant_properti_id
+          tenant_properti_ids: newItem.tenant_properti_ids.filter(id => id !== "none")
         }),
       });
 
@@ -156,7 +156,7 @@ export default function RegulationDetailPage() {
           variant: "success",
         });
         setIsModalOpen(false);
-        setNewItem({ reference_number: "", content: "", tenant_properti_id: "" });
+        setNewItem({ reference_number: "", content: "", tenant_properti_ids: [] });
         fetchData(); // Refresh list
       } else {
         const errorData = await response.json();
@@ -238,7 +238,7 @@ export default function RegulationDetailPage() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         formData={newItem}
-        onFormChange={setNewItem}
+        onFormChange={(data: any) => setNewItem(data)}
         onSubmit={handleCreateItem}
         submitting={submitting}
         tenantProperties={tenantProperties}
@@ -252,81 +252,85 @@ export default function RegulationDetailPage() {
         <div className="flex items-center gap-3">
 
            <span className="text-sm font-bold text-slate-400">
-              TYPE: {regulation.regulation_type}
+              Jenis Regulasi: {regulation.regulation_type}
            </span>
         </div>
       </div>
 
       {/* ── Kartu Info Ringkas ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-700 delay-100">       
-        <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              regulation.status === 'Active' ? 'bg-emerald-50 text-emerald-600 shadow-inner' : 
-              regulation.status === 'Draft' ? 'bg-amber-50 text-amber-600' : 
-              regulation.status === 'Retired' ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-600'
-            }`}>
-              {regulation.status === 'Active' ? (
-                <div className="relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <CheckCircle2 size={24} className="relative" />
-                </div>
-              ) : (
-                <CheckCircle2 size={24} />
-              )}
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Status Saat Ini</p>
-              <p className={`text-md font-bold uppercase tracking-wider ${
-                regulation.status === 'Active' ? 'text-emerald-600' : 
-                regulation.status === 'Draft' ? 'text-amber-600' : 
-                regulation.status === 'Retired' ? 'text-rose-600' : 'text-slate-800'
-              }`}>
-                {regulation.status === 'Active' ? 'Aktif' : regulation.status === 'Draft' ? 'Draf' : regulation.status === 'Retired' ? 'Non-Aktif' : regulation.status}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-inner">
-              <FileText size={24} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Total Item</p>
-              <p className="text-md font-bold text-slate-900 uppercase tracking-tight">{items.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="flex justify-around border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
-          <CardContent className="p-6 flex items-center gap-16">
-            <div className="w-16 h-12 rounded-xl flex items-center justify-center shadow-inner">
-               <PieChart 
-                 pass={regulation.amount_pass || 0} 
-                 fail={regulation.amount_fail || 0} 
-                 na={regulation.amount_na || 0} 
-               />
-            </div>
-            <div className="flex-1">
-              <div className="flex flex-row gap-5 items-center">
-                 <div className="space-y-1 flex flex-col items-center">
-                    <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">Memenuhi</p>
-                    <p className="text-sm font-bold text-emerald-400 leading-none">{regulation.amount_pass || 0}</p>
-                 </div>
-                 <div className="space-y-1 flex flex-col items-center">
-                    <p className="text-[8px] font-bold text-rose-600 uppercase tracking-widest">Tidak</p>
-                    <p className="text-sm font-bold text-rose-400 leading-none">{regulation.amount_fail || 0}</p>
-                 </div>
-                 <div className="space-y-1 flex flex-col items-center">
-                    <p className="text-[8px] font-bold text-yellow-600 uppercase tracking-widest">N/A</p>
-                    <p className="text-sm font-bold text-yellow-400 leading-none">{regulation.amount_na || 0}</p>
-                 </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in duration-700 delay-100">       
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6 animate-in fade-in zoom-in duration-700 delay-100">       
+          <Card className="flex justify-around border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
+            <CardContent className="p-6 flex items-center gap-16">
+              <div className="w-20 h-12 rounded-xl flex items-center justify-center shadow-inner">
+                <PieChart 
+                  pass={regulation.amount_pass || 0} 
+                  fail={regulation.amount_fail || 0} 
+                  na={regulation.amount_na || 0} 
+                />
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex-1">
+                <div className="flex flex-row gap-5 items-center">
+                  <div className="space-y-1 flex flex-col items-center">
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Memenuhi</p>
+                      <p className="text-md font-bold text-emerald-400 leading-none">{regulation.amount_pass || 0}</p>
+                  </div>
+                  <div className="space-y-1 flex flex-col items-center">
+                      <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Tidak</p>
+                      <p className="text-md font-bold text-rose-400 leading-none">{regulation.amount_fail || 0}</p>
+                  </div>
+                  <div className="space-y-1 flex flex-col items-center">
+                      <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">N/A</p>
+                      <p className="text-md font-bold text-yellow-400 leading-none">{regulation.amount_na || 0}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in duration-700 delay-100">       
+          <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-inner">
+                <FileText size={24} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Total Item</p>
+                <p className="text-md font-bold text-slate-900 uppercase tracking-tight">{items.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl overflow-hidden active:scale-[0.98] transition-transform">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                regulation.status === 'Active' ? 'bg-emerald-50 text-emerald-600 shadow-inner' : 
+                regulation.status === 'Draft' ? 'bg-amber-50 text-amber-600' : 
+                regulation.status === 'Retired' ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-600'
+              }`}>
+                {regulation.status === 'Active' ? (
+                  <div className="relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <CheckCircle2 size={24} className="relative" />
+                  </div>
+                ) : (
+                  <CheckCircle2 size={24} />
+                )}
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Status Saat Ini</p>
+                <p className={`text-md font-bold uppercase tracking-wider ${
+                  regulation.status === 'Active' ? 'text-emerald-600' : 
+                  regulation.status === 'Draft' ? 'text-amber-600' : 
+                  regulation.status === 'Retired' ? 'text-rose-600' : 'text-slate-800'
+                }`}>
+                  {regulation.status === 'Active' ? 'Aktif' : regulation.status === 'Draft' ? 'Draf' : regulation.status === 'Retired' ? 'Non-Aktif' : regulation.status}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* ── Daftar Item ── */}
@@ -339,50 +343,53 @@ export default function RegulationDetailPage() {
           {items.length > 0 ? (
             items.map((item, index) => (
               <Card key={item.id} className="group border border-slate-100 bg-white rounded-[24px] hover:border-blue-200 hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full">
-                <CardContent className="p-6 flex-1 relative">
+                <CardContent className="px-6 pt-6 pb-3 flex-1 relative">
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex w-full justify-between items-center gap-3">
                       <div className="text-xs font-bold text-slate-500 flex items-center justify-center uppercase tracking-widest">
                         {item.reference_number}
                       </div>
-                      {item.tenant_properti_id && (
-                        <Badge className="bg-blue-50 text-blue-600 border-none text-[9px] font-black rounded-lg">
-                          {(() => {
-                            const tp = tenantProperties.find(t => t.id === item.tenant_properti_id);
+                      <div className="flex items-center justify-between">
+                        {results[item.id] ? (
+                          <Badge className={`${
+                            results[item.id].compliance_status === 'YES' ? 'text-[12px] bg-emerald-50 text-emerald-600' : 
+                            results[item.id].compliance_status === 'NO' ? 'text-[12px] bg-rose-50 text-rose-600' : 
+                            'text-[12px] bg-yellow-50 text-yellow-600'
+                          } border-none font-black`}>
+                            {results[item.id].compliance_status === 'YES' ? 'Memenuhi' : 
+                            results[item.id].compliance_status === 'NO' ? 'Tidak' : 'N/A'}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-slate-50 text-slate-400 border-none text-[9px] font-black rounded-lg">
+                            Belum Dinilai
+                          </Badge>
+                        )}
+                      </div>
+                      {item.tenant_properti_ids && item.tenant_properti_ids.length > 0 && (
+                        <div className="flex gap-2 flex-wrap justify-end">
+                          {item.tenant_properti_ids.map(tpId => {
+                            const tp = tenantProperties.find(t => t.id === tpId);
                             const p = tp ? properties.find(prop => prop.id === tp.property_id) : null;
-                            return p ? p.Name : "Properti";
-                          })()}
-                        </Badge>
+                            return (
+                              <Badge key={tpId} className="bg-blue-50 text-blue-600 border-none text-[9px] font-black rounded-lg">
+                                {p ? (p.name || p.Name) : "Properti"}
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
                   
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-black text-slate-900 leading-[1.3] group-hover:text-blue-600 transition-colors">
+                  <div className="space-y-0">
+                    <h3 className="text-sm font-black text-slate-900 leading-[1.3] group-hover:text-blue-600 transition-colors">
                       {item.content}
                     </h3>
                   </div>
                 </CardContent>
 
                 {/* Status & Remarks Footer */}
-                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    {results[item.id] ? (
-                      <Badge className={`${
-                        results[item.id].compliance_status === 'YES' ? 'text-[12px] bg-emerald-50 text-emerald-600' : 
-                        results[item.id].compliance_status === 'NO' ? 'text-[12px] bg-rose-50 text-rose-600' : 
-                        'text-[12px] bg-yellow-50 text-yellow-600'
-                      } border-none font-black`}>
-                        {results[item.id].compliance_status === 'YES' ? 'Memenuhi' : 
-                         results[item.id].compliance_status === 'NO' ? 'Tidak' : 'N/A'}
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-slate-50 text-slate-400 border-none text-[9px] font-black rounded-lg">
-                        Belum Dinilai
-                      </Badge>
-                    )}
-                  </div>
-                  
+                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-3">            
                   {results[item.id]?.remarks && (
                     <div className="ml-2">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Catatan / Temuan</p>
@@ -396,7 +403,7 @@ export default function RegulationDetailPage() {
             ))
           ) : (
             <div className="p-24 text-center bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-3xl space-y-4 col-span-full">
-              <div className="w-16 h-16 bg-slate-100 text-slate-300 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-20 h-12 bg-slate-100 text-slate-300 rounded-full flex items-center justify-center mx-auto">
                  <FileText size={32} />
               </div>
               <div>

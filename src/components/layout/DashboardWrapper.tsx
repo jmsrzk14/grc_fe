@@ -4,9 +4,21 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { Toaster } from "@/components/ui/toaster";
+import { usePathname } from "next/navigation";
 
 export default function DashboardWrapper({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Jika di halaman auth (login, dll), tampilkan children saja tanpa layout dashboard
+  if (pathname?.startsWith("/auth")) {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden font-sans">

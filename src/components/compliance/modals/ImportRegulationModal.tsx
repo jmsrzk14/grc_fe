@@ -109,103 +109,142 @@ export default function ImportRegulationModal({
             return;
           }
 
+          const getVal = (row: any, ...keys: string[]) => {
+            const rowKeys = Object.keys(row);
+            const lowerKeys = keys.map(k => k.toLowerCase());
+            const targetKey = rowKeys.find(rk => lowerKeys.includes(rk.trim().toLowerCase()));
+            return targetKey ? row[targetKey] : null;
+          };
+
           // Group by Regulation (using Title)
           const regulationsMap = new Map<string, any>();
           jsonData.forEach((row: any) => {
-            const title = row.Title || row.Judul || row.title;
+            const title = getVal(row, "Title", "Judul", "title");
             if (!title) return;
 
             if (!regulationsMap.has(title)) {
               regulationsMap.set(title, {
-                title: title,
-                regulation_type:
-                  row.Type || row.Tipe || row.regulation_type || "POJK",
-                category:
-                  row.Category || row.Kategori || row.category || "Internal",
-                issued_date: formatDate(
-                  row.Date || row.Tanggal || row.issued_date
-                ),
-                status: row.Status || "Active",
+                title: String(title).trim(),
+                regulation_type: String(getVal(row, "Type", "Tipe", "regulation_type") || "POJK"),
+                category: String(getVal(row, "Category", "Kategori", "category") || "Internal"),
+                issued_date: formatDate(getVal(row, "Date", "Tanggal", "issued_date")),
+                status: String(getVal(row, "Status", "status") || "Active"),
                 items: [],
               });
             }
 
-            const itemRef = row.ItemRef || row.Ref || row.reference_number;
-            const itemContent = row.ItemContent || row.Content || row.content;
-            const propName =
-              row.TenantProperty || row.Property || row.tenant_properti;
+            const itemRef = getVal(row, "ItemRef", "Ref", "reference_number");
+            const itemContent = getVal(row, "ItemContent", "Content", "content");
+            const propNames = getVal(row, "TenantProperty", "Property", "tenant_properti");
+            let tenantPropIds: string[] = [];
 
-            let tenantPropId = null;
-            if (propName) {
-              const prop = properties.find(
-                (p) =>
-                  p.Name.toLowerCase() === String(propName).toLowerCase()
-              );
-              if (prop) {
-                const mapping = tenantProperties.find(
-                  (tp) => tp.property_id === prop.id
+            if (propNames) {
+              const names = String(propNames).split(",").map(s => s.trim());
+              names.forEach(name => {
+                const prop = properties.find(
+                  (p: any) => p && (p.Name || p.name || "").toLowerCase() === name.toLowerCase()
                 );
-                if (mapping) tenantPropId = mapping.id;
-              }
+                if (prop) {
+                  const mapping = tenantProperties.find(
+                    (tp) => tp.property_id === prop.id
+                  );
+                  if (mapping) tenantPropIds.push(mapping.id);
+                }
+              });
             }
 
             if (itemRef && itemContent) {
               regulationsMap.get(title).items.push({
                 reference_number: String(itemRef),
                 content: String(itemContent),
-                tenant_properti_id: tenantPropId,
+                tenant_properti_ids: tenantPropIds,
               });
             }
           });
 
           const regulations = Array.from(regulationsMap.values());
+          if (regulations.length === 0) {
+            toast({
+              title: "Data Tidak Terbaca",
+              description: "Pastikan nama kolom (Title, ItemRef, ItemContent) sudah benar.",
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
+
           setProgress(`Memproses ${regulations.length} regulasi...`);
 
           const apiUrl =
             process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+          let successCount = 0;
           for (let i = 0; i < regulations.length; i++) {
             const reg = regulations[i];
             setProgress(
               `Mengimpor: ${reg.title} (${i + 1}/${regulations.length})`
             );
 
-            const regRes = await fetch(`${apiUrl}/api/v1/regulations`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                title: reg.title,
-                regulation_type: reg.regulation_type,
-                issued_date: reg.issued_date,
-                status: reg.status,
-                category: reg.category,
-              }),
-            });
-
-            if (!regRes.ok) {
-              console.error(`Failed to import regulation: ${reg.title}`);
-              continue;
-            }
-
-            const regData = await regRes.json();
-            const regId = regData.id;
-
-            for (const item of reg.items) {
-              await fetch(`${apiUrl}/api/v1/regulations/${regId}/items`, {
+            try {
+              const regRes = await fetch(`${apiUrl}/api/v1/regulations`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(item),
+                body: JSON.stringify({
+                  title: reg.title,
+                  regulation_type: reg.regulation_type,
+                  issued_date: reg.issued_date,
+                  status: reg.status,
+                  category: reg.category,
+                }),
               });
+
+              if (!regRes.ok) {
+                console.error(`Failed to import regulation: ${reg.title}`);
+                continue;
+              }
+
+              const regData = await regRes.json();
+              const regId = regData.id;
+
+              if (!regId) {
+                console.error(`No ID returned for regulation: ${reg.title}`);
+                continue;
+              }
+
+              for (const item of reg.items) {
+                const itemRes = await fetch(`${apiUrl}/api/v1/regulations/${regId}/items`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(item),
+                });
+                if (!itemRes.ok) {
+                  console.error(`Failed to create item: ${item.reference_number}`);
+                }
+              }
+              successCount++;
+            } catch (err) {
+              console.error(`Error importing ${reg.title}:`, err);
             }
           }
 
-          toast({
-            title: "Berhasil!",
-            description: `${regulations.length} regulasi telah diimpor.`,
-            variant: "success",
-          });
-          setOpen(false);
-          onSuccess();
+          if (successCount > 0) {
+            toast({
+              title: "Berhasil!",
+              description: `${successCount} regulasi telah diimpor.`,
+              variant: "success",
+            });
+          } else {
+            toast({
+              title: "Gagal Impor",
+              description: "Tidak ada data yang berhasil masuk. Cek konsol browser untuk detail.",
+              variant: "destructive",
+            });
+          }
+
+          if (successCount > 0) {
+            setOpen(false);
+            onSuccess();
+          }
         } catch (err) {
           console.error(err);
           toast({
@@ -285,7 +324,7 @@ export default function ImportRegulationModal({
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".csv,.xlsx,.xls"
+                accept=".csv,.xlsx,.xls,.xlsm"
                 onChange={handleFileChange}
                 disabled={loading}
               />

@@ -191,11 +191,11 @@ export default function Sidebar() {
           </div>
         </div>
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/auth/login" })}
           className="flex items-center gap-2 w-full px-2 py-1.5 border-t border-white/5 mt-1 rounded-md text-[11px] font-bold uppercase tracking-widest text-white/40 hover:text-rose-400 hover:bg-white/5 transition-all"
         >
           <LogOut className="w-3.5 h-3.5" />
-          Keluar Sistem
+          Log Out
         </button>
       </div>
     </aside>

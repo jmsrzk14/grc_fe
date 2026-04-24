@@ -23,7 +23,7 @@ import {
 interface AddItemFormData {
   reference_number: string;
   content: string;
-  tenant_properti_id: string;
+  tenant_properti_ids: string[];
 }
 
 interface TenantProperty {
@@ -33,7 +33,7 @@ interface TenantProperty {
 
 interface Property {
   id: string;
-  Name: string;
+  name: string;
 }
 
 interface AddItemModalProps {
@@ -127,29 +127,35 @@ export default function AddItemModal({
                 <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">
                   Target Properti (Opsional)
                 </Label>
-                <Select
-                  value={formData.tenant_properti_id}
-                  onValueChange={(val) =>
-                    onFormChange({ ...formData, tenant_properti_id: val })
-                  }
-                >
-                  <SelectTrigger className="h-12 border-slate-100 bg-slate-50/50 rounded-xl focus:ring-blue-200 transition-all font-bold text-sm">
-                    <SelectValue placeholder="Pilih Properti" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-slate-100 shadow-xl font-bold">
-                    <SelectItem value="none">Tanpa Properti</SelectItem>
-                    {tenantProperties.map((tp) => {
-                      const p = properties.find(
-                        (prop) => prop.id === tp.property_id
-                      );
-                      return (
-                        <SelectItem key={tp.id} value={tp.id}>
-                          {p ? p.Name : `Property ${tp.id.substring(0, 5)}`}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {tenantProperties.map((tp) => {
+                    const p = properties.find((prop) => prop.id === tp.property_id);
+                    const isSelected = formData.tenant_properti_ids?.includes(tp.id);
+                    return (
+                      <button
+                        key={tp.id}
+                        type="button"
+                        onClick={() => {
+                          const currentIds = formData.tenant_properti_ids || [];
+                          const newIds = isSelected
+                            ? currentIds.filter((id) => id !== tp.id)
+                            : [...currentIds, tp.id];
+                          onFormChange({ ...formData, tenant_properti_ids: newIds });
+                        }}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+                          isSelected
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200 active:scale-95"
+                            : "bg-slate-50 text-slate-400 border-slate-100 hover:border-blue-200 hover:bg-white"
+                        }`}
+                      >
+                        {p ? (p.name || (p as any).Name) : `Property ${tp.id.substring(0, 5)}`}
+                      </button>
+                    );
+                  })}
+                  {tenantProperties.length === 0 && (
+                    <p className="text-[10px] font-bold text-slate-400 italic">Tidak ada properti tersedia.</p>
+                  )}
+                </div>
               </div>
             </div>
 
