@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useHeader } from "@/context/HeaderContext";
 import AddItemModal from "@/components/compliance/modals/AddItemModal";
 import PieChart from "@/components/compliance/shared/PieChart";
+import { useSession } from "next-auth/react";
 
 
 interface Regulation {
@@ -34,7 +35,7 @@ interface RegulationItem {
   id: string;
   reference_number: string;
   content: string;
-  tenant_properti_ids: string[];
+  property_ids: string[];
 }
 
 interface AssessmentResult {
@@ -50,6 +51,7 @@ export default function RegulationDetailPage() {
   const id = params.id as string;
   const { toast } = useToast();
   const { setTitle } = useHeader();
+  const { data: session } = useSession();
 
   const [regulation, setRegulation] = useState<Regulation | null>(null);
   const [items, setItems] = useState<RegulationItem[]>([]);
@@ -59,63 +61,58 @@ export default function RegulationDetailPage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [properties, setProperties] = useState<any[]>([]);
   const [newItem, setNewItem] = useState({
     reference_number: "",
     content: "",
-    tenant_properti_ids: [] as string[]
+    property_ids: [] as string[]
   });
 
-  const [properties, setProperties] = useState<any[]>([]);
-  const [tenantProperties, setTenantProperties] = useState<any[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const regRes = await fetch(`${apiUrl}/api/v1/regulations/${id}`);
+      
+      const currentTenantId = (session?.user as any)?.tenantId;
+      if (!currentTenantId) return;
+      setTenantId(currentTenantId);
+
+      const regRes = await fetch(`${apiUrl}/api/v1/regulations/${id}?tenant_id=${currentTenantId}`);
       if (regRes.ok) {
         const regData = await regRes.json();
         setRegulation(regData);
         setTitle(regData.title || "Regulation Detail");
       }
 
-      const itemsRes = await fetch(`${apiUrl}/api/v1/regulations/${id}/items`);
+      const itemsRes = await fetch(`${apiUrl}/api/v1/regulations/${id}/items?tenant_id=${currentTenantId}`);
       if (itemsRes.ok) {
         const itemsData = await itemsRes.json();
         setItems(itemsData);
       }
 
-      // Fetch Properties and Tenants
-      const tenantsRes = await fetch(`${apiUrl}/api/v1/tenants`);
-      if (tenantsRes.ok) {
-        const tenants = await tenantsRes.json();
-        if (tenants.length > 0) {
-          const tId = tenants[0].id;
-          setTenantId(tId);
-          const [tpRes, pRes, sessionsRes] = await Promise.all([
-             fetch(`${apiUrl}/api/v1/tenants/${tId}/properties`),
-             fetch(`${apiUrl}/api/v1/properties`),
-             fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${tId}`)
-          ]);
-          if (tpRes.ok) setTenantProperties(await tpRes.json());
-          if (pRes.ok) setProperties(await pRes.json());
-          
-          if (sessionsRes.ok) {
-            const sessions = await sessionsRes.json();
-            if (sessions.length > 0) {
-              // Get results from the most recent session
-              const activeSession = sessions[0];
-              const resultsRes = await fetch(`${apiUrl}/api/v1/assessments/sessions/${activeSession.id}/results`);
-              if (resultsRes.ok) {
-                const resultsData = await resultsRes.json();
-                const resultsMap: Record<string, AssessmentResult> = {};
-                resultsData.forEach((res: any) => { 
-                  resultsMap[res.regulation_item_id] = res; 
-                });
-                setResults(resultsMap);
-              }
-            }
+      // Fetch Properties
+      const [pRes, sessionsRes] = await Promise.all([
+         fetch(`${apiUrl}/api/v1/properties`),
+         fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${currentTenantId}`)
+      ]);
+      
+      if (pRes.ok) setProperties(await pRes.json());
+      
+      if (sessionsRes.ok) {
+        const sessions = await sessionsRes.json();
+        if (sessions.length > 0) {
+          // Get results from the most recent session
+          const activeSession = sessions[0];
+          const resultsRes = await fetch(`${apiUrl}/api/v1/assessments/sessions/${activeSession.id}/results`);
+          if (resultsRes.ok) {
+            const resultsData = await resultsRes.json();
+            const resultsMap: Record<string, AssessmentResult> = {};
+            resultsData.forEach((res: any) => { 
+              resultsMap[res.regulation_item_id] = res; 
+            });
+            setResults(resultsMap);
           }
         }
       }
@@ -127,10 +124,10 @@ export default function RegulationDetailPage() {
   };
 
   useEffect(() => {
-    if (id) {
+    if (id && session?.user) {
       fetchData();
     }
-  }, [id]);
+  }, [id, session]);
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +142,7 @@ export default function RegulationDetailPage() {
         },
         body: JSON.stringify({
           ...newItem,
-          tenant_properti_ids: newItem.tenant_properti_ids.filter(id => id !== "none")
+          property_ids: newItem.property_ids?.filter(id => id !== "none")
         }),
       });
 
@@ -156,7 +153,7 @@ export default function RegulationDetailPage() {
           variant: "success",
         });
         setIsModalOpen(false);
-        setNewItem({ reference_number: "", content: "", tenant_properti_ids: [] });
+        setNewItem({ reference_number: "", content: "", property_ids: [] });
         fetchData(); // Refresh list
       } else {
         const errorData = await response.json();
@@ -241,7 +238,6 @@ export default function RegulationDetailPage() {
         onFormChange={(data: any) => setNewItem(data)}
         onSubmit={handleCreateItem}
         submitting={submitting}
-        tenantProperties={tenantProperties}
         properties={properties}
       />
 
@@ -365,19 +361,6 @@ export default function RegulationDetailPage() {
                           </Badge>
                         )}
                       </div>
-                      {item.tenant_properti_ids && item.tenant_properti_ids.length > 0 && (
-                        <div className="flex gap-2 flex-wrap justify-end">
-                          {item.tenant_properti_ids.map(tpId => {
-                            const tp = tenantProperties.find(t => t.id === tpId);
-                            const p = tp ? properties.find(prop => prop.id === tp.property_id) : null;
-                            return (
-                              <Badge key={tpId} className="bg-blue-50 text-blue-600 border-none text-[9px] font-black rounded-lg">
-                                {p ? (p.name || p.Name) : "Properti"}
-                              </Badge>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
                   </div>
                   

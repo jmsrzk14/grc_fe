@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { COMPLIANCE_DATA, TRANSACTION_ALERTS, CUSTOMER_DATA } from "@/lib/data";
+import { useSession } from "next-auth/react";
 import {
   ShieldCheck,
   ChevronDown,
@@ -64,6 +65,7 @@ const CATEGORIES = [
 
 export default function CompliancePage() {
   const { setTitle } = useHeader();
+  const { data: session } = useSession();
   const [regulations, setRegulations] = useState<Regulation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Internal');
@@ -74,9 +76,13 @@ export default function CompliancePage() {
 
   useEffect(() => {
     const fetchRegulations = async () => {
+      if (!session?.user) return;
+      const currentTenantId = (session.user as any).tenantId;
+      if (!currentTenantId) return;
+
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7000";
-        const response = await fetch(`${apiUrl}/api/v1/regulations`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(`${apiUrl}/api/v1/regulations?tenant_id=${currentTenantId}`);
         if (response.ok) {
           const data = await response.json();
           // Use the real assessment data from backend
@@ -97,7 +103,7 @@ export default function CompliancePage() {
     };
 
     fetchRegulations();
-  }, []);
+  }, [session]);
 
   const filteredRegulations = regulations.filter(reg =>
     activeCategory === 'all' || reg.category?.toLowerCase() === activeCategory.toLowerCase()

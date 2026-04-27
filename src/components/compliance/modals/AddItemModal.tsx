@@ -23,17 +23,13 @@ import {
 interface AddItemFormData {
   reference_number: string;
   content: string;
-  tenant_properti_ids: string[];
-}
-
-interface TenantProperty {
-  id: string;
-  property_id: string;
+  property_ids: string[];
 }
 
 interface Property {
   id: string;
   name: string;
+  Name?: string;
 }
 
 interface AddItemModalProps {
@@ -43,7 +39,6 @@ interface AddItemModalProps {
   onFormChange: (data: AddItemFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   submitting: boolean;
-  tenantProperties: TenantProperty[];
   properties: Property[];
 }
 
@@ -54,7 +49,6 @@ export default function AddItemModal({
   onFormChange,
   onSubmit,
   submitting,
-  tenantProperties,
   properties,
 }: AddItemModalProps) {
   return (
@@ -122,25 +116,24 @@ export default function AddItemModal({
                 />
               </div>
 
-              {/* Tenant Property */}
+              {/* Properties */}
               <div className="grid gap-2">
                 <Label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">
                   Target Properti (Opsional)
                 </Label>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {tenantProperties.map((tp) => {
-                    const p = properties.find((prop) => prop.id === tp.property_id);
-                    const isSelected = formData.tenant_properti_ids?.includes(tp.id);
+                  {properties.map((p) => {
+                    const isSelected = formData.property_ids?.includes(p.id);
                     return (
                       <button
-                        key={tp.id}
+                        key={p.id}
                         type="button"
                         onClick={() => {
-                          const currentIds = formData.tenant_properti_ids || [];
+                          const currentIds = formData.property_ids || [];
                           const newIds = isSelected
-                            ? currentIds.filter((id) => id !== tp.id)
-                            : [...currentIds, tp.id];
-                          onFormChange({ ...formData, tenant_properti_ids: newIds });
+                            ? currentIds.filter((id) => id !== p.id)
+                            : [...currentIds, p.id];
+                          onFormChange({ ...formData, property_ids: newIds });
                         }}
                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
                           isSelected
@@ -148,11 +141,11 @@ export default function AddItemModal({
                             : "bg-slate-50 text-slate-400 border-slate-100 hover:border-blue-200 hover:bg-white"
                         }`}
                       >
-                        {p ? (p.name || (p as any).Name) : `Property ${tp.id.substring(0, 5)}`}
+                        {p.name || (p as any).Name || "Properti"}
                       </button>
                     );
                   })}
-                  {tenantProperties.length === 0 && (
+                  {properties.length === 0 && (
                     <p className="text-[10px] font-bold text-slate-400 italic">Tidak ada properti tersedia.</p>
                   )}
                 </div>

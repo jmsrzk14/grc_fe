@@ -83,8 +83,8 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 custom-scrollbar">
-        {filteredMenuItems.map((group) => (
-          <div className="mb-6">
+        {filteredMenuItems.map((group, index) => (
+          <div key={index} className="mb-6">
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const hasSubItems = !!(item as any).subItems;

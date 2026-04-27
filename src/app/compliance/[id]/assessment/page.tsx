@@ -15,12 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useHeader } from "@/context/HeaderContext";
+import { useSession } from "next-auth/react";
 
 interface RegulationItem {
   id: string;
   reference_number: string;
   content: string;
-  tenant_properti_ids: string[];
+  property_ids: string[];
 }
 
 interface AssessmentResult {
@@ -34,6 +35,7 @@ interface Session {
   id: string;
   title: string;
   status: string;
+  period_year: number;
 }
 
 export default function AssessmentPage() {
@@ -43,12 +45,14 @@ export default function AssessmentPage() {
   const { setTitle } = useHeader();
   const router = useRouter();
 
+  const { data: authSession } = useSession();
   const [items, setItems] = useState<RegulationItem[]>([]);
   const [results, setResults] = useState<Record<string, AssessmentResult>>({});
   const [localRemarks, setLocalRemarks] = useState<Record<string, string>>({});
-  const [session, setSession] = useState<Session | null>(null);
+  const [assessmentSession, setAssessmentSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [isFinishing, setIsFinishing] = useState(false);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [tenantProperties, setTenantProperties] = useState<any[]>([]);
@@ -61,51 +65,47 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     const initData = async () => {
+      if (!authSession?.user) return;
+      const currentTenantId = (authSession.user as any).tenantId;
+      if (!currentTenantId) return;
+
       try {
         setLoading(true);
-        const [itemsRes, tenantsRes] = await Promise.all([
-          fetch(`${apiUrl}/api/v1/regulations/${id}/items`),
-          fetch(`${apiUrl}/api/v1/tenants`)
+        setTenantId(currentTenantId);
+
+        // Fetch items with tenant_id filter
+        const [itemsRes] = await Promise.all([
+          fetch(`${apiUrl}/api/v1/regulations/${id}/items?tenant_id=${currentTenantId}`),
         ]);
 
         if (itemsRes.ok) setItems(await itemsRes.json());
 
-        let currentTenantId = "";
-        if (tenantsRes.ok) {
-          const tenants = await tenantsRes.json();
-          if (tenants.length > 0) {
-            currentTenantId = tenants[0].id;
-            setTenantId(currentTenantId);
-          }
-        }
+        // Fetch other data
+        const [sessionsRes, tpRes, pRes] = await Promise.all([
+          fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${currentTenantId}`),
+          fetch(`${apiUrl}/api/v1/tenants/${currentTenantId}/properties`),
+          fetch(`${apiUrl}/api/v1/properties`)
+        ]);
 
-        if (currentTenantId) {
-          const [sessionsRes, tpRes, pRes] = await Promise.all([
-            fetch(`${apiUrl}/api/v1/assessments/sessions?tenant_id=${currentTenantId}`),
-            fetch(`${apiUrl}/api/v1/tenants/${currentTenantId}/properties`),
-            fetch(`${apiUrl}/api/v1/properties`)
-          ]);
+        if (tpRes.ok) setTenantProperties(await tpRes.json());
+        if (pRes.ok) setProperties(await pRes.json());
 
-          if (tpRes.ok) setTenantProperties(await tpRes.json());
-          if (pRes.ok) setProperties(await pRes.json());
-
-          if (sessionsRes.ok) {
-            const sessions = await sessionsRes.json();
-            if (sessions.length > 0) {
-              const activeSession = sessions[0];
-              setSession(activeSession);
-              const resultsRes = await fetch(`${apiUrl}/api/v1/assessments/sessions/${activeSession.id}/results`);
-              if (resultsRes.ok) {
-                const resultsData = await resultsRes.json();
-                const resultsMap: Record<string, AssessmentResult> = {};
-                const remarksMap: Record<string, string> = {};
-                resultsData.forEach((res: any) => {
-                  resultsMap[res.regulation_item_id] = res;
-                  remarksMap[res.regulation_item_id] = res.remarks || "";
-                });
-                setResults(resultsMap);
-                setLocalRemarks(remarksMap);
-              }
+        if (sessionsRes.ok) {
+          const sessions = await sessionsRes.json();
+          if (sessions.length > 0) {
+            const activeSession = sessions[0];
+            setAssessmentSession(activeSession);
+            const resultsRes = await fetch(`${apiUrl}/api/v1/assessments/sessions/${activeSession.id}/results`);
+            if (resultsRes.ok) {
+              const resultsData = await resultsRes.json();
+              const resultsMap: Record<string, AssessmentResult> = {};
+              const remarksMap: Record<string, string> = {};
+              resultsData.forEach((res: any) => {
+                resultsMap[res.regulation_item_id] = res;
+                remarksMap[res.regulation_item_id] = res.remarks || "";
+              });
+              setResults(resultsMap);
+              setLocalRemarks(remarksMap);
             }
           }
         }
@@ -115,8 +115,8 @@ export default function AssessmentPage() {
         setLoading(false);
       }
     };
-    if (id) initData();
-  }, [id, apiUrl]);
+    if (id && authSession) initData();
+  }, [id, apiUrl, authSession]);
 
   const handleStartSession = async () => {
     if (!tenantId) return;
@@ -130,12 +130,12 @@ export default function AssessmentPage() {
           period_year: new Date().getFullYear()
         })
       });
-      if (res.ok) setSession(await res.json());
+      if (res.ok) setAssessmentSession(await res.json());
     } catch (err) { console.error(err); }
   };
 
   const handleSaveResult = async (itemId: string, status?: string, remarks?: string) => {
-    if (!session) return;
+    if (!assessmentSession) return;
 
     const currentResult = results[itemId];
     const finalStatus = status !== undefined ? status : (currentResult?.compliance_status || "N/A");
@@ -150,7 +150,7 @@ export default function AssessmentPage() {
 
     setSaving(itemId);
     try {
-      const res = await fetch(`${apiUrl}/api/v1/assessments/sessions/${session.id}/results`, {
+      const res = await fetch(`${apiUrl}/api/v1/assessments/sessions/${assessmentSession.id}/results`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -174,6 +174,40 @@ export default function AssessmentPage() {
     }
   };
 
+  const handleFinishSession = async () => {
+    if (!assessmentSession || !tenantId) return;
+
+    setIsFinishing(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/v1/assessments/sessions/${assessmentSession.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          title: assessmentSession.title,
+          period_year: assessmentSession.period_year,
+          status: "Completed"
+        })
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Assessment Selesai",
+          description: "Sesi assessment telah berhasil diselesaikan.",
+          variant: "success",
+        });
+        router.push(`/compliance/${id}`);
+      } else {
+        throw new Error("Gagal menyelesaikan sesi");
+      }
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Gagal menyelesaikan assessment", variant: "destructive" });
+    } finally {
+      setIsFinishing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen space-y-4 bg-slate-50/50">
@@ -183,7 +217,7 @@ export default function AssessmentPage() {
     );
   }
 
-  if (!session) {
+  if (!assessmentSession) {
     return (
       <div className="w-full max-w-lg mx-auto py-32 text-center space-y-6">
         <div className="w-20 h-20 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto shadow-sm"><Shield size={40} /></div>
@@ -209,6 +243,19 @@ export default function AssessmentPage() {
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Evaluation Board</p>
           </div>
         </div>
+
+        <Button
+          onClick={handleFinishSession}
+          disabled={isFinishing}
+          className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95 gap-2"
+        >
+          {isFinishing ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <CheckCircle2 size={16} />
+          )}
+          Selesai & Simpan
+        </Button>
       </div>
 
       {/* ── List View ── */}
@@ -227,13 +274,12 @@ export default function AssessmentPage() {
                       <Badge variant="outline" className="bg-white text-[10px] font-bold border-slate-200 text-slate-500 rounded-md py-0 h-5">
                         {item.reference_number}
                       </Badge>
-                      {item.tenant_properti_ids && item.tenant_properti_ids.length > 0 && (
+                      {item.property_ids && item.property_ids.length > 0 && (
                         <div className="flex gap-1.5 flex-wrap">
-                          {item.tenant_properti_ids.map(tpId => {
-                            const tp = tenantProperties.find(t => t.id === tpId);
-                            const p = tp ? properties.find(prop => prop.id === tp.property_id) : null;
+                          {item.property_ids.map(pId => {
+                            const p = properties.find(prop => prop.id === pId);
                             return (
-                              <Badge key={tpId} className="bg-blue-500 text-white text-[9px] font-bold border-none rounded-md py-0 h-5">
+                              <Badge key={pId} className="bg-blue-500 text-white text-[9px] font-bold border-none rounded-md py-0 h-5">
                                 {p ? (p.name || p.Name) : "Properti"}
                               </Badge>
                             );
